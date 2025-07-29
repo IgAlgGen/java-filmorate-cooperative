@@ -15,55 +15,62 @@ public class UserControllerTest {
     private  final UserController controller = new UserController();
 
     @Test
-    @DisplayName("Добавление пользователя с валидными данными возвращает статус 201 и пользователя")
+    @DisplayName("Добавление пользователя с валидными данными возвращает статус 201 и пользователя. Тест не вызывает исключений.")
     void addUserWithValidDataReturnsCreatedAndUser() {
         User user = new User(1, "userlogin", "User Name", "user@example.com", LocalDate.of(1990, 1, 1));
         ResponseEntity<User> response = controller.addUser(user);
         assertEquals(201, response.getStatusCodeValue());
         assertEquals(user.getEmail(), response.getBody().getEmail());
+        assertDoesNotThrow(() -> controller.validateUser(user));
     }
 
     @Test
     @DisplayName("Добавление пользователя с пустым email выбрасывает ValidationException")
     void addUserWithEmptyEmailThrowsValidationException() {
         User user = new User(1, "userlogin", "User Name", "", LocalDate.of(1990, 1, 1));
-        assertThrows(ValidationException.class, () -> controller.addUser(user));
+        ValidationException ex = assertThrows(ValidationException.class, () -> controller.addUser(user));
+        assertTrue(ex.getMessage().contains("Email не может быть пустым"));
     }
 
     @Test
     @DisplayName("Добавление пользователя с email без символа '@' выбрасывает ValidationException")
     void addUserWithInvalidEmailThrowsValidationException() {
         User user = new User(1, "userlogin", "User Name", "user?example.com", LocalDate.of(1990, 1, 1));
-        assertThrows(ValidationException.class, () -> controller.addUser(user));
+        ValidationException ex = assertThrows(ValidationException.class, () -> controller.addUser(user));
+        assertTrue(ex.getMessage().contains("должен содержать символ '@'"));
     }
 
     @Test
     @DisplayName("Добавление пользователя с пустым логином выбрасывает ValidationException")
     void addUserWithEmptyLoginThrowsValidationException() {
         User user = new User(1, "", "User Name", "user@example.com", LocalDate.of(1990, 1, 1));
-        assertThrows(ValidationException.class, () -> controller.addUser(user));
+        ValidationException ex = assertThrows(ValidationException.class, () -> controller.addUser(user));
+        assertTrue(ex.getMessage().contains("Логин не может быть пустым"));
     }
 
     @Test
     @DisplayName("Добавление пользователя с логином, содержащим пробелы, выбрасывает ValidationException")
     void addUserWithLoginContainingSpacesThrowsValidationException() {
         User user = new User(1, "user login", "User Name", "user@example.com", LocalDate.of(1990, 1, 1));
-        assertThrows(ValidationException.class, () -> controller.addUser(user));
+        ValidationException ex = assertThrows(ValidationException.class, () -> controller.addUser(user));
+        assertTrue(ex.getMessage().contains("не должен содержать пробелы"));
     }
 
     @Test
-    @DisplayName("Добавление пользователя с пустым именем подставляет логин в качестве имени")
-    void addUserWithEmptyNameUsesLoginAsName() {
+    @DisplayName("Добавление пользователя с пустым именем подставляет логин в качестве имени. Тест не вызывает исключений.")
+    void addUserWithEmptyNameUsesLoginAsName_thenNoException() {
         User user = new User(1, "userlogin", "", "user@example.com", LocalDate.of(1990, 1, 1));
         ResponseEntity<User> response = controller.addUser(user);
         assertEquals("userlogin", response.getBody().getName());
+        assertDoesNotThrow(() -> controller.validateUser(user));
     }
 
     @Test
     @DisplayName("Добавление пользователя с датой рождения в будущем выбрасывает ValidationException")
     void addUserWithFutureBirthdayThrowsValidationException() {
         User user = new User(1, "userlogin", "User Name", "user@example.com", LocalDate.now().plusDays(1));
-        assertThrows(ValidationException.class, () -> controller.addUser(user));
+        ValidationException ex = assertThrows(ValidationException.class, () -> controller.addUser(user));
+        assertTrue(ex.getMessage().contains("Дата рождения не может быть в будущем"));
     }
 
     @Test
