@@ -22,6 +22,7 @@ public class InMemoryStorageImpl<T extends Identifiable> implements InMemoryStor
         if (!storage.containsKey(id)) {
             return Optional.empty(); // Если элемент не найден, возвращаем пустой Optional
         }
+        item.setId(id); // Устанавливаем ID для обновляемого элемента
         storage.put(id, item);
         return Optional.of(item);// Возвращаем обновленный элемент
     }

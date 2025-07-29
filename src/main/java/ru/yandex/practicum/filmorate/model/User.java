@@ -1,9 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -14,6 +11,8 @@ import java.time.LocalDate;
 @Setter
 @RequiredArgsConstructor
 @AllArgsConstructor
+@ToString
+@EqualsAndHashCode
 public class User implements Identifiable {
     private int id;
     @NotBlank

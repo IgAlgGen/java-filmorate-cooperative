@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exeptions.ValidationException;
@@ -7,10 +8,12 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.InMemoryStorage;
 import ru.yandex.practicum.filmorate.service.InMemoryStorageImpl;
 
+import javax.validation.Valid;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -22,23 +25,43 @@ public class UserController {
     // 3. получение списка всех пользователей.
 
     @PostMapping
-    public ResponseEntity<User> addUser(User user) {
-        validateUser(user);
-        User addedUser = userStorage.create(user);
-        URI location = URI.create("/users/" + addedUser.getId());
-        return ResponseEntity.created(location).body(addedUser); // Возвращаем ответ с кодом 201 Created и заголовком Location
+    public ResponseEntity<User> addUser(@RequestBody @Valid User user) {
+        log.info("Добавление пользователя: {}", user.toString());
+        try {
+            validateUser(user);
+            User addedUser = userStorage.create(user);
+            log.info("Пользователь добавлен: {}", addedUser.toString());
+            URI location = URI.create("/users/" + addedUser.getId());
+            return ResponseEntity.created(location).body(addedUser); // Возвращаем ответ с кодом 201 Created и заголовком Location
+        } catch (ValidationException e) {
+            log.warn("Ошибка валидации при добавлении пользователя: {}", e.getMessage());
+            throw e;
+        }
     }
 
-    @PutMapping
-    public ResponseEntity<User> updateUser(int id, User user) {
-        validateUser(user);
-        return userStorage.update(id, user)
-                .map(updatedUser -> ResponseEntity.ok(updatedUser))
-                .orElse(ResponseEntity.notFound().build()); // Возвращаем 404 Not Found, если пользователь не найден
+    @PutMapping("/{id}")
+    public ResponseEntity<User> updateUser(@PathVariable int id, @RequestBody @Valid User user) {
+        log.info("Обновление пользователя с ID {}: {}", id, user.toString());
+        try {
+            validateUser(user);
+            return userStorage.update(id, user)
+                    .map(updatedUser -> {
+                        log.info("Пользователь с ID {} обновлен: {}", id, updatedUser);
+                        return ResponseEntity.ok(updatedUser);
+                    })
+                    .orElseGet( () -> {
+                        log.warn("Пользователь с ID {} не найден", id);
+                        return ResponseEntity.notFound().build(); // Возвращаем 404 Not Found, если пользователь не найден
+                    });
+        } catch (ValidationException e) {
+            log.warn("Ошибка валидации при обновлении пользователя: {}", e.getMessage());
+            throw e;
+        }
     }
 
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
+        log.info("Получение списка всех пользователей");
         return ResponseEntity.ok(userStorage.findAll()); // Возвращаем список всех пользователей с кодом 200
     }
 

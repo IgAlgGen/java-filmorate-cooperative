@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exeptions.ValidationException;
@@ -13,6 +14,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/films")
 public class FilmController {
@@ -25,22 +27,42 @@ public class FilmController {
 
     @PostMapping
     public ResponseEntity<Film> addFilm(@Valid @RequestBody Film film) {
-        validateFilm(film);
-        Film addedFilm = filmStorage.create(film);
-        URI location = URI.create("/films/" + addedFilm.getId());
-        return ResponseEntity.created(location).body(addedFilm);
+        log.info("Добавление фильма: {}", film.toString());
+        try {
+            validateFilm(film);
+            Film addedFilm = filmStorage.create(film);
+            log.info("Фильм добавлен: {}", addedFilm.toString());
+            URI location = URI.create("/films/" + addedFilm.getId());
+            return ResponseEntity.created(location).body(addedFilm);
+        } catch (ValidationException e) {
+            log.warn("Ошибка валидации при добавлении фильма: {}", e.getMessage());
+            throw e;
+        }
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Film> updateFilm(@PathVariable int id, @Valid @RequestBody Film film) {
-        validateFilm(film);
-        return filmStorage.update(id, film)
-                .map(updatedFilm -> ResponseEntity.ok(updatedFilm))
-                .orElse(ResponseEntity.notFound().build());
+        log.info("Обновление фильма с ID {}: {}", id, film.toString());
+        try {
+            validateFilm(film);
+            return filmStorage.update(id, film)
+                    .map(updatedFilm -> {
+                        log.info("Фильм с ID {} обновлен: {}", id, updatedFilm);
+                        return ResponseEntity.ok(updatedFilm);
+                    })
+                    .orElseGet(() -> {
+                        log.warn("Фильм с ID {} не найден", id);
+                        return ResponseEntity.notFound().build(); // Возвращаем 404 Not Found, если фильм не найден
+                    });
+        } catch (ValidationException e) {
+            log.warn("Ошибка при обновлении фильма: {}", e.getMessage());
+            throw e;
+        }
     }
 
     @GetMapping
     public ResponseEntity<List<Film>> getAllFilms() {
+        log.info("Получение списка всех фильмов");
         return ResponseEntity.ok(filmStorage.findAll());
     }
 

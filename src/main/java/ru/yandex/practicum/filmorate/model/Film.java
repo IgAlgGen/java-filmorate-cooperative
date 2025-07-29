@@ -1,9 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
@@ -17,6 +14,8 @@ import java.time.LocalDate;
 @Setter
 @RequiredArgsConstructor
 @AllArgsConstructor
+@ToString
+@EqualsAndHashCode
 public class Film implements Identifiable {
     private int id;
     @NotBlank
