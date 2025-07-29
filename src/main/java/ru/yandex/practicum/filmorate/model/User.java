@@ -17,7 +17,6 @@ public class User implements Identifiable {
     private int id;
     @NotBlank
     private String login;
-    @NotBlank
     private String name;
     @NotBlank
     @Email
