@@ -49,7 +49,7 @@ public class UserController {
                         log.info("Пользователь с ID {} обновлен: {}", id, updatedUser);
                         return ResponseEntity.ok(updatedUser);
                     })
-                    .orElseGet( () -> {
+                    .orElseGet(() -> {
                         log.warn("Пользователь с ID {} не найден", id);
                         return ResponseEntity.notFound().build(); // Возвращаем 404 Not Found, если пользователь не найден
                     });
@@ -66,7 +66,7 @@ public class UserController {
     }
 
     // валидация полей User
-    private void validateUser(User user) {
+    void validateUser(User user) {
         // email
         if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
             throw new ValidationException("Email не может быть пустым и должен содержать символ '@'.");

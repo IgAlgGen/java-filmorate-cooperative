@@ -28,7 +28,8 @@ public class FilmControllerTest {
     @DisplayName("Добавление фильма с пустым названием выбрасывает ValidationException")
     void addFilmWithEmptyNameThrowsValidationException() {
         Film film = new Film(1, " ", LocalDate.of(2000, 1, 1), "Description", 120);
-        assertThrows(ValidationException.class, () -> controller.addFilm(film));
+        ValidationException ex = assertThrows(ValidationException.class, () -> controller.addFilm(film));
+        assertTrue(ex.getMessage().contains("Название фильма не может быть пустым"));
     }
 
     @Test
@@ -36,21 +37,24 @@ public class FilmControllerTest {
     void addFilmWithLongDescriptionThrowsValidationException() {
         String longDescription = "a".repeat(201);
         Film film = new Film(1, "Film", LocalDate.of(2000, 1, 1), longDescription, 120);
-        assertThrows(ValidationException.class, () -> controller.addFilm(film));
+        ValidationException ex = assertThrows(ValidationException.class, () -> controller.addFilm(film));
+        assertTrue(ex.getMessage().contains("Длина описания не должна превышать 200 символов"));
     }
 
     @Test
     @DisplayName("Добавление фильма с датой релиза до 28.12.1895 выбрасывает ValidationException")
     void addFilmWithTooEarlyReleaseDateThrowsValidationException() {
         Film film = new Film(1, "Film", LocalDate.of(1800, 1, 1), "Description", 120);
-        assertThrows(ValidationException.class, () -> controller.addFilm(film));
+        ValidationException ex = assertThrows(ValidationException.class, () -> controller.addFilm(film));
+        assertTrue(ex.getMessage().contains("Дата релиза не может быть раньше 1895-12-28"));
     }
 
     @Test
     @DisplayName("Добавление фильма с нулевой продолжительностью выбрасывает ValidationException")
     void addFilmWithZeroDurationThrowsValidationException() {
         Film film = new Film(1, "Film", LocalDate.of(2000, 1, 1), "Description", 0);
-        assertThrows(ValidationException.class, () -> controller.addFilm(film));
+        ValidationException ex = assertThrows(ValidationException.class, () -> controller.addFilm(film));
+        assertTrue(ex.getMessage().contains("Продолжительность фильма должна быть положительным числом"));
     }
 
     @Test
@@ -78,7 +82,8 @@ public class FilmControllerTest {
         Film film = new Film(1, "Film", LocalDate.of(2000, 1, 1), "Description", 120);
         controller.addFilm(film);
         Film invalidUpdate = new Film(1, "", LocalDate.of(2000, 1, 1), "New Description", 120);
-        assertThrows(ValidationException.class, () -> controller.updateFilm(1, invalidUpdate));
+        ValidationException ex = assertThrows(ValidationException.class, () -> controller.updateFilm(1, invalidUpdate));
+        assertTrue(ex.getMessage().contains("Название фильма не может быть пустым"));
     }
 
     @Test
