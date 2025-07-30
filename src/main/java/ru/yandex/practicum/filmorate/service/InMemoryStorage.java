@@ -5,7 +5,7 @@ import ru.yandex.practicum.filmorate.model.Identifiable;
 import java.util.List;
 import java.util.Optional;
 
-public interface InMemoryStorage <T extends Identifiable> {
+public interface InMemoryStorage<T extends Identifiable> {
     /**
      * Создает новый элемент в хранилище.
      */
