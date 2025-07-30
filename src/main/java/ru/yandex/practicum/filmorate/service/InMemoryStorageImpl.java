@@ -5,7 +5,7 @@ import ru.yandex.practicum.filmorate.model.Identifiable;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class InMemoryStorageImpl <T extends Identifiable> implements InMemoryStorage<T> {
+public class InMemoryStorageImpl<T extends Identifiable> implements InMemoryStorage<T> {
     private final Map<Integer, T> storage = new HashMap<>();
     private final AtomicInteger counter = new AtomicInteger(1);
 
