@@ -40,18 +40,18 @@ public class FilmController {
         }
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Film> updateFilm(@PathVariable int id, @Valid @RequestBody Film film) {
-        log.info("Обновление фильма с ID {}: {}", id, film.toString());
+    @PutMapping
+    public ResponseEntity<Film> updateFilm(@Valid @RequestBody Film film) {
+        log.info("Обновление фильма с ID {}: {}", film.getId(), film.toString());
         try {
             validateFilm(film);
-            return filmStorage.update(id, film)
+            return filmStorage.update(film.getId(), film)
                     .map(updatedFilm -> {
-                        log.info("Фильм с ID {} обновлен: {}", id, updatedFilm);
+                        log.info("Фильм с ID {} обновлен: {}", film.getId(), updatedFilm);
                         return ResponseEntity.ok(updatedFilm);
                     })
                     .orElseGet(() -> {
-                        log.warn("Фильм с ID {} не найден", id);
+                        log.warn("Фильм с ID {} не найден", film.getId());
                         return ResponseEntity.notFound().build(); // Возвращаем 404 Not Found, если фильм не найден
                     });
         } catch (ValidationException e) {

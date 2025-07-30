@@ -39,18 +39,18 @@ public class UserController {
         }
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable int id, @RequestBody @Valid User user) {
-        log.info("Обновление пользователя с ID {}: {}", id, user.toString());
+    @PutMapping
+    public ResponseEntity<User> updateUser(@RequestBody @Valid User user) {
+        log.info("Обновление пользователя с ID {}: {}", user.getId(), user.toString());
         try {
             validateUser(user);
-            return userStorage.update(id, user)
+            return userStorage.update(user.getId(), user)
                     .map(updatedUser -> {
-                        log.info("Пользователь с ID {} обновлен: {}", id, updatedUser);
+                        log.info("Пользователь с ID {} обновлен: {}", user.getId(), updatedUser);
                         return ResponseEntity.ok(updatedUser);
                     })
                     .orElseGet(() -> {
-                        log.warn("Пользователь с ID {} не найден", id);
+                        log.warn("Пользователь с ID {} не найден", user.getId());
                         return ResponseEntity.notFound().build(); // Возвращаем 404 Not Found, если пользователь не найден
                     });
         } catch (ValidationException e) {
