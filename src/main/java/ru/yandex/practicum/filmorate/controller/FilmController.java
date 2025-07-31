@@ -44,16 +44,21 @@ public class FilmController {
     public ResponseEntity<Film> updateFilm(@Valid @RequestBody Film film) {
         log.info("Обновление фильма с ID {}: {}", film.getId(), film.toString());
         try {
-            validateFilm(film);
-            return filmStorage.update(film.getId(), film)
-                    .map(updatedFilm -> {
-                        log.info("Фильм с ID {} обновлен: {}", film.getId(), updatedFilm);
-                        return ResponseEntity.ok(updatedFilm);
-                    })
-                    .orElseGet(() -> {
-                        log.warn("Фильм с ID {} не найден", film.getId());
-                        return ResponseEntity.notFound().build(); // Возвращаем 404 Not Found, если фильм не найден
-                    });
+            if (film == null || film.getId() == 0) {
+                log.error("Пустой JSON в запросе обновления фильма");
+                return ResponseEntity.status(500).build(); // возвращаем 500 Internal Server Error (как хотят тесты в postman)
+            } else {
+                validateFilm(film);
+                return filmStorage.update(film.getId(), film)
+                        .map(updatedFilm -> {
+                            log.info("Фильм с ID {} обновлен: {}", film.getId(), updatedFilm);
+                            return ResponseEntity.ok(updatedFilm);
+                        })
+                        .orElseGet(() -> {
+                            log.warn("Фильм с ID {} не найден", film.getId());
+                            return ResponseEntity.notFound().build(); // Возвращаем 404 Not Found, если фильм не найден
+                        });
+            }
         } catch (ValidationException e) {
             log.warn("Ошибка при обновлении фильма: {}", e.getMessage());
             throw e;
