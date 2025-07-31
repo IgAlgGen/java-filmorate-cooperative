@@ -79,7 +79,7 @@ public class UserControllerTest {
         User user = new User(1, "userlogin", "User Name", "user@example.com", LocalDate.of(1990, 1, 1));
         controller.addUser(user);
         User updatedUser = new User(1, "userloginUpdated", "User Name Updated", "userUpdated@example.com", LocalDate.of(1990, 1, 1));
-        ResponseEntity<User> response = controller.updateUser(1, updatedUser);
+        ResponseEntity<User> response = controller.updateUser(updatedUser);
         assertEquals(200, response.getStatusCodeValue());
         assertEquals("userUpdated@example.com", response.getBody().getEmail());
     }
@@ -88,7 +88,7 @@ public class UserControllerTest {
     @DisplayName("Обновление несуществующего пользователя возвращает 404 Not Found")
     void updateNonExistingUserReturnsNotFound() {
         User updatedUser = new User(99, "userlogin", "User Name", "user@example.com", LocalDate.of(1990, 1, 1));
-        ResponseEntity<User> response = controller.updateUser(99, updatedUser);
+        ResponseEntity<User> response = controller.updateUser(updatedUser);
         assertEquals(404, response.getStatusCodeValue());
     }
 
