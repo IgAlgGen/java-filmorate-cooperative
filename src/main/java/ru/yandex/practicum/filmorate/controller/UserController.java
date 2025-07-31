@@ -55,7 +55,7 @@ public class UserController {
                         })
                         .orElseGet(() -> {
                             log.warn("Пользователь с ID {} не найден", user.getId());
-                            return ResponseEntity.notFound().build(); // Возвращаем 404 Not Found, если пользователь не найден
+                            return ResponseEntity.status(500).build(); // Возвращаем 404 Not Found, если пользователь не найден
                         });
             }
         } catch (ValidationException e) {
