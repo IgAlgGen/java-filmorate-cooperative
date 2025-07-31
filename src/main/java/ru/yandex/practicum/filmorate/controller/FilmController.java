@@ -41,10 +41,10 @@ public class FilmController {
     }
 
     @PutMapping
-    public ResponseEntity<Film> updateFilm(@Valid @RequestBody Film film) {
+    public ResponseEntity<Film> updateFilm(@Valid @RequestBody(required = false) Film film) {
         log.info("Обновление фильма с ID {}: {}", film.getId(), film.toString());
         try {
-            if (film == null || film.getId() == 0) {
+            if (film == null) {
                 log.error("Пустой JSON в запросе обновления фильма");
                 return ResponseEntity.status(500).build(); // возвращаем 500 Internal Server Error (как хотят тесты в postman)
             } else {
