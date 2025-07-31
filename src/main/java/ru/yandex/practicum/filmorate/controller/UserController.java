@@ -40,19 +40,24 @@ public class UserController {
     }
 
     @PutMapping
-    public ResponseEntity<User> updateUser(@RequestBody @Valid User user) {
+    public ResponseEntity<User> updateUser(@Valid@ RequestBody(required = false) User user) {
         log.info("Обновление пользователя с ID {}: {}", user.getId(), user.toString());
         try {
-            validateUser(user);
-            return userStorage.update(user.getId(), user)
-                    .map(updatedUser -> {
-                        log.info("Пользователь с ID {} обновлен: {}", user.getId(), updatedUser);
-                        return ResponseEntity.ok(updatedUser);
-                    })
-                    .orElseGet(() -> {
-                        log.warn("Пользователь с ID {} не найден", user.getId());
-                        return ResponseEntity.notFound().build(); // Возвращаем 404 Not Found, если пользователь не найден
-                    });
+            if (user == null) {
+                log.error("Пустой JSON в запросе обновления пользователя");
+                return ResponseEntity.status(500).build(); // возвращаем 500 Internal Server Error (как хотят тесты в postman)
+            }else {
+                validateUser(user);
+                return userStorage.update(user.getId(), user)
+                        .map(updatedUser -> {
+                            log.info("Пользователь с ID {} обновлен: {}", user.getId(), updatedUser);
+                            return ResponseEntity.ok(updatedUser);
+                        })
+                        .orElseGet(() -> {
+                            log.warn("Пользователь с ID {} не найден", user.getId());
+                            return ResponseEntity.notFound().build(); // Возвращаем 404 Not Found, если пользователь не найден
+                        });
+            }
         } catch (ValidationException e) {
             log.warn("Ошибка валидации при обновлении пользователя: {}", e.getMessage());
             throw e;
