@@ -63,7 +63,7 @@ public class FilmControllerTest {
         Film film = new Film(1, "Film", LocalDate.of(2000, 1, 1), "Description", 120);
         controller.addFilm(film);
         Film updated = new Film(1, "Updated", LocalDate.of(2001, 2, 2), "New Description", 150);
-        ResponseEntity<Film> response = controller.updateFilm( updated);
+        ResponseEntity<Film> response = controller.updateFilm(updated);
         assertEquals(200, response.getStatusCodeValue());
         assertEquals("Updated", response.getBody().getName());
     }
@@ -72,7 +72,7 @@ public class FilmControllerTest {
     @DisplayName("Обновление несуществующего фильма возвращает 404 Not Found")
     void updateNonExistingFilmReturnsNotFound() {
         Film updated = new Film(99, "Updated", LocalDate.of(2001, 2, 2), "New Desc", 150);
-        ResponseEntity<Film> response = controller.updateFilm( updated);
+        ResponseEntity<Film> response = controller.updateFilm(updated);
         assertEquals(404, response.getStatusCodeValue());
     }
 
@@ -82,7 +82,7 @@ public class FilmControllerTest {
         Film film = new Film(1, "Film", LocalDate.of(2000, 1, 1), "Description", 120);
         controller.addFilm(film);
         Film invalidUpdate = new Film(1, "", LocalDate.of(2000, 1, 1), "New Description", 120);
-        ValidationException ex = assertThrows(ValidationException.class, () -> controller.updateFilm( invalidUpdate));
+        ValidationException ex = assertThrows(ValidationException.class, () -> controller.updateFilm(invalidUpdate));
         assertTrue(ex.getMessage().contains("Название фильма не может быть пустым"));
     }
 
