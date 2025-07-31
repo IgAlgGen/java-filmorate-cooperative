@@ -46,7 +46,7 @@ public class UserController {
             if (user == null) {
                 log.error("Пустой JSON в запросе обновления пользователя");
                 return ResponseEntity.status(500).build(); // возвращаем 500 Internal Server Error (как хотят тесты в postman)
-            }else {
+            } else {
                 validateUser(user);
                 return userStorage.update(user.getId(), user)
                         .map(updatedUser -> {
