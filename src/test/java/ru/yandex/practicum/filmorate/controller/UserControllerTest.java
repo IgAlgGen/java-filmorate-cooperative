@@ -1,21 +1,22 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
 import ru.yandex.practicum.filmorate.exeptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.InMemoryStorage;
+import ru.yandex.practicum.filmorate.service.InMemoryStorageImpl;
 
 import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@RequiredArgsConstructor
+
 public class UserControllerTest {
 
-    private  final UserController controller;
+    private  final UserController controller = new UserController(new InMemoryStorageImpl<>());
 
     @Test
     @DisplayName("Добавление пользователя с валидными данными возвращает статус 201 и пользователя. Тест не вызывает исключений.")

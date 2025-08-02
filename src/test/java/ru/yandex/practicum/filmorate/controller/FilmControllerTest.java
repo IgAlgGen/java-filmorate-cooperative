@@ -6,16 +6,17 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
 import ru.yandex.practicum.filmorate.exeptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.InMemoryStorageImpl;
 
 import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@RequiredArgsConstructor
+
 public class FilmControllerTest {
 
-    private final FilmController controller;
+    private final FilmController controller = new FilmController(new InMemoryStorageImpl<>());
 
     @Test
     @DisplayName("Добавление валидного фильма возвращает статус 201 и фильм. Тест не вызывает исключений.")
