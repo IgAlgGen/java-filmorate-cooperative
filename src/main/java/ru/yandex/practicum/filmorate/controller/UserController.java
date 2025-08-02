@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exeptions.ValidationException;
@@ -12,9 +11,7 @@ import ru.yandex.practicum.filmorate.service.InMemoryStorageImpl;
 import javax.validation.Valid;
 import java.net.URI;
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
@@ -43,16 +40,12 @@ public class UserController {
     }
 
     @PutMapping
-    public ResponseEntity<?> updateUser(@Valid@ RequestBody(required = false) User user) {
+    public ResponseEntity<User> updateUser(@Valid@ RequestBody(required = false) User user) {
         log.info("Обновление пользователя с ID {}: {}", user.getId(), user.toString());
         try {
             if (user == null) {
                 log.error("Пустой JSON в запросе обновления пользователя");
-                Map<String, String> body = Collections.singletonMap(
-                        "error",
-                        "Пустой JSON в запросе обновления пользователя"
-                );
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body); // возвращаем 500 Internal Server Error (как хотят тесты в postman)
+                return ResponseEntity.status(500).build(); // возвращаем 500 Internal Server Error (как хотят тесты в postman)
             } else {
                 validateUser(user);
                 return userStorage.update(user.getId(), user)
@@ -62,7 +55,7 @@ public class UserController {
                         })
                         .orElseGet(() -> {
                             log.warn("Пользователь с ID {} не найден", user.getId());
-                            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+                            return ResponseEntity.notFound().build(); // Возвращаем 404 Not Found, если пользователь не найден
                         });
             }
         } catch (ValidationException e) {
