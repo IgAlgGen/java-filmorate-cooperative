@@ -21,7 +21,7 @@ public class UserControllerTest {
     @DisplayName("Добавление пользователя с валидными данными возвращает статус 201 и пользователя. Тест не вызывает исключений.")
     void addUserWithValidDataReturnsCreatedAndUser() {
         User user = new User(1, "userlogin", "User Name", "user@example.com", LocalDate.of(1990, 1, 1));
-        ResponseEntity<User> response = assertDoesNotThrow(()-> controller.addUser(user));
+        ResponseEntity<User> response = assertDoesNotThrow(() -> controller.addUser(user));
         assertEquals(201, response.getStatusCodeValue());
         assertEquals(user.getEmail(), response.getBody().getEmail());
     }
