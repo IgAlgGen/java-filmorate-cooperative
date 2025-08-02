@@ -56,7 +56,7 @@ public class FilmController {
                         })
                         .orElseGet(() -> {
                             log.warn("Фильм с ID {} не найден", film.getId());
-                            return ResponseEntity.notFound().build(); // Возвращаем 404 Not Found, если фильм не найден
+                            return ResponseEntity.status(404).body(film); // Возвращаем 404 Not Found, если фильм не найден
                         });
             }
         } catch (ValidationException e) {
