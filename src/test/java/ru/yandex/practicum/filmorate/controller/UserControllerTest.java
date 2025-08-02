@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
@@ -11,17 +12,18 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@RequiredArgsConstructor
 public class UserControllerTest {
-    private  final UserController controller = new UserController();
+
+    private  final UserController controller;
 
     @Test
     @DisplayName("Добавление пользователя с валидными данными возвращает статус 201 и пользователя. Тест не вызывает исключений.")
     void addUserWithValidDataReturnsCreatedAndUser() {
         User user = new User(1, "userlogin", "User Name", "user@example.com", LocalDate.of(1990, 1, 1));
-        ResponseEntity<User> response = controller.addUser(user);
+        ResponseEntity<User> response = assertDoesNotThrow(()-> controller.addUser(user));
         assertEquals(201, response.getStatusCodeValue());
         assertEquals(user.getEmail(), response.getBody().getEmail());
-        assertDoesNotThrow(() -> controller.validateUser(user));
     }
 
     @Test
@@ -60,9 +62,8 @@ public class UserControllerTest {
     @DisplayName("Добавление пользователя с пустым именем подставляет логин в качестве имени. Тест не вызывает исключений.")
     void addUserWithEmptyNameUsesLoginAsName_thenNoException() {
         User user = new User(1, "userlogin", "", "user@example.com", LocalDate.of(1990, 1, 1));
-        ResponseEntity<User> response = controller.addUser(user);
+        ResponseEntity<User> response = assertDoesNotThrow(() -> controller.addUser(user));
         assertEquals("userlogin", response.getBody().getName());
-        assertDoesNotThrow(() -> controller.validateUser(user));
     }
 
     @Test

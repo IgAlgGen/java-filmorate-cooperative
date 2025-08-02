@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
@@ -11,17 +12,18 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@RequiredArgsConstructor
 public class FilmControllerTest {
-    private final FilmController controller = new FilmController();
+
+    private final FilmController controller;
 
     @Test
     @DisplayName("Добавление валидного фильма возвращает статус 201 и фильм. Тест не вызывает исключений.")
     void addValidFilmReturnsCreatedAndFilm_thenNoException() {
         Film film = new Film(1, "Film", LocalDate.of(2000, 1, 1), "Description", 120);
-        ResponseEntity<Film> response = controller.addFilm(film);
+        ResponseEntity<Film> response = assertDoesNotThrow(() -> controller.addFilm(film));
         assertEquals(201, response.getStatusCodeValue());
         assertEquals(film.getName(), response.getBody().getName());
-        assertDoesNotThrow(() -> controller.validateFilm(film));
     }
 
     @Test

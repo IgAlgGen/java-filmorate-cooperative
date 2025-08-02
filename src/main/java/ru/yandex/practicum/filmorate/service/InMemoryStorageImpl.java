@@ -1,13 +1,20 @@
 package ru.yandex.practicum.filmorate.service;
 
+import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Identifiable;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Service
 public class InMemoryStorageImpl<T extends Identifiable> implements InMemoryStorage<T> {
-    private final Map<Integer, T> storage = new HashMap<>();
-    private final AtomicInteger counter = new AtomicInteger(1);
+    private final Map<Integer, T> storage;
+    private final AtomicInteger counter;
+
+    public InMemoryStorageImpl() {
+        this.storage = new HashMap<>();
+        this.counter = new AtomicInteger(1); // Начинаем с 1, чтобы ID начинались с 1
+    }
 
     @Override
     public T create(T item) {
