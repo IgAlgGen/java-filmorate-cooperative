@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exeptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.InMemoryStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryStorage;
 
 import javax.validation.Valid;
 import java.net.URI;

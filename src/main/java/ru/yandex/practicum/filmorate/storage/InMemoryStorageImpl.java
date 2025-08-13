@@ -1,12 +1,12 @@
-package ru.yandex.practicum.filmorate.service;
+package ru.yandex.practicum.filmorate.storage;
 
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Identifiable;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@Service
+@Component
 public class InMemoryStorageImpl<T extends Identifiable> implements InMemoryStorage<T> {
     private final Map<Integer, T> storage;
     private final AtomicInteger counter;

@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
 import ru.yandex.practicum.filmorate.exeptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.InMemoryStorageImpl;
+import ru.yandex.practicum.filmorate.storage.InMemoryStorageImpl;
 
 import java.time.LocalDate;
 import java.util.List;
