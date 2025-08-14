@@ -38,4 +38,9 @@ public class InMemoryStorageImpl<T extends Identifiable> implements InMemoryStor
     public List<T> findAll() {
         return new ArrayList<>(storage.values()); // Возвращаем список всех элементов
     }
+
+    @Override
+    public Optional<T> findById(int id) {
+        return Optional.ofNullable(storage.get(id));
+    }
 }

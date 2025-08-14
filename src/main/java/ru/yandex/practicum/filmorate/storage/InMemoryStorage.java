@@ -20,4 +20,9 @@ public interface InMemoryStorage<T extends Identifiable> {
      * Находит все элементы в хранилище.
      */
     List<T> findAll();
+
+    /**
+     * Находит элемент по идентификатору.
+     */
+    Optional<T> findById(int id);
 }

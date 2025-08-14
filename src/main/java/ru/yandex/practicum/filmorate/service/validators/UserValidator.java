@@ -22,7 +22,7 @@ public class UserValidator {
      * @throws ValidationException если какое-либо из полей не соответствует условиям
      * @param user объект User для валидации
      */
-    public static void validateUser(User user) {
+    public void validateUser(User user) {
         // email
         if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
             throw new ValidationException("Email не может быть пустым и должен содержать символ '@'.");
