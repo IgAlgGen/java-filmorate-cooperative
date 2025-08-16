@@ -53,8 +53,8 @@ public class FilmService {
     /**
      * Проверяет, существует ли пользователь с данным ID.<br>
      *
-     * @param userId int
-     * @exception NotFoundException e
+     * @param userId идентификатор пользователя
+     * @exception NotFoundException если пользователь не найден
      */
     private void checkUserExistence(int userId) {
         userStorage.findById(userId).orElseThrow(() ->
