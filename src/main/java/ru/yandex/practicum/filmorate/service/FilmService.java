@@ -39,7 +39,6 @@ public class FilmService {
     // Лайки
 
     public void addLike(int filmId, int userId) {
-        // убеждаемся, что фильм и пользователь существуют
         Film film = getById(filmId);
         checkUserExistence(userId);
         film.addLike(userId);
@@ -51,6 +50,12 @@ public class FilmService {
         film.removeLike(userId);
     }
 
+    /**
+     * Проверяет, существует ли пользователь с данным ID.<br>
+     *
+     * @param userId int
+     * @exception NotFoundException e
+     */
     private void checkUserExistence(int userId) {
         userStorage.findById(userId).orElseThrow(() ->
                 new NotFoundException(String.format("Пользователь с id=%d не найден", userId)));
