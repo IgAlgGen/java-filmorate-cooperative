@@ -60,7 +60,7 @@ public class FilmController {
     пользователь ставит лайк фильму
      */
     @PutMapping("/{id}/like/{userId}")
-    public ResponseEntity<Void> addLike(@PathVariable @Positive int id, @RequestParam @Positive int userId) {
+    public ResponseEntity<Void> addLike(@PathVariable @Positive int id, @PathVariable @Positive int userId) {
         filmService.addLike(id, userId);
         log.info("Пользователь с ID {} ставит лайк фильму с ID {}", userId, id);
         return ResponseEntity.ok().build();
@@ -70,7 +70,7 @@ public class FilmController {
     пользователь удаляет лайк.
      */
     @DeleteMapping("/{id}/like/{userId}")
-    public ResponseEntity<Void> removeLike(@PathVariable @Positive int id, @RequestParam @Positive int userId) {
+    public ResponseEntity<Void> removeLike(@PathVariable @Positive int id, @PathVariable @Positive int userId) {
         filmService.removeLike(id, userId);
         log.info("Пользователь с ID {} удаляет лайк к фильму с ID {}", userId, id);
         return ResponseEntity.ok().build();
