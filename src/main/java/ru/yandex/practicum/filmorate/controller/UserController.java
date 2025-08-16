@@ -4,12 +4,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exeptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.service.validators.UserValidator;
+import org.springframework.validation.annotation.Validated;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import java.net.URI;
 import java.util.List;
 
@@ -17,43 +17,32 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
+@Validated
 @RequestMapping("/users")
 public class UserController {
 
     private final UserService userService;
-    private final UserValidator userValidator;
 
     @PostMapping
     public ResponseEntity<User> create(@Valid @RequestBody User user) {
-        try {
-            userValidator.validateUser(user);
-            User created = userService.create(user);
-            log.info("Пользователь добавлен: {}", created.toString());
-            URI location = URI.create("/users/" + created.getId());
-            return ResponseEntity.created(location).body(created); // Возвращаем ответ с кодом 201 Created и заголовком Location
-        } catch (ValidationException e) {
-            log.warn("Ошибка валидации при добавлении пользователя: {}", e.getMessage());
-            throw e;
+        // если name пустой — подставим login
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
         }
+        User created = userService.create(user);
+        log.info("Пользователь добавлен: {}", created.toString());
+        URI location = URI.create("/users/" + created.getId());
+        return ResponseEntity.created(location).body(created);
     }
 
     @PutMapping
-    public ResponseEntity<User> updateUser(@Valid @RequestBody(required = false) User user) {
+    public ResponseEntity<User> update(@Valid @RequestBody User user) {
         log.info("Обновление пользователя с ID {}: {}", user.getId(), user.toString());
-        if (user == null) {
-            log.error("Пустой JSON в запросе обновления пользователя");
-            return ResponseEntity.status(500).build(); // возвращаем 500 Internal Server Error если пользователь не указан
-        }
-        try {
-            userValidator.validateUser(user);
-            User updated = userService.update(user.getId(), user);
-            log.info("Пользователь с ID {} обновлен: {}", user.getId(), updated);
-            return ResponseEntity.ok(updated);
-        } catch (ValidationException e) {
-            log.warn("Ошибка валидации при обновлении пользователя: {}", e.getMessage());
-            throw e;
-        }
+        User updated = userService.update(user.getId(), user);
+        log.info("Пользователь с ID {} обновлен: {}", user.getId(), updated);
+        return ResponseEntity.ok(updated);
     }
+
 
     @GetMapping
     public ResponseEntity<List<User>> getAll() {
@@ -62,17 +51,17 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getById(@PathVariable int id) {
+    public ResponseEntity<User> getById(@PathVariable @Positive int id) {
         return ResponseEntity.ok(userService.getById(id));
     }
 
-    // ДРУЖБА
+// ДРУЖБА
 
     /*
     добавление в друзья.
      */
     @PutMapping("/{id}/friends/{friendId}")
-    public ResponseEntity<Void> addFriend(@PathVariable int id, @PathVariable int friendId) {
+    public ResponseEntity<Void> addFriend(@PathVariable @Positive int id, @PathVariable @Positive int friendId) {
         userService.addFriend(id, friendId);
         log.info("Пользователь с ID {} добавляет в друзья пользователя с ID {}", id, friendId);
         return ResponseEntity.ok().build();
@@ -82,7 +71,7 @@ public class UserController {
     удаление из друзей.
      */
     @DeleteMapping("/{id}/friends/{friendId}")
-    public ResponseEntity<Void> removeFriend(@PathVariable int id, @PathVariable int friendId) {
+    public ResponseEntity<Void> removeFriend(@PathVariable @Positive int id, @PathVariable @Positive int friendId) {
         userService.removeFriend(id, friendId);
         log.info("Пользователь с ID {} удаляет из друзей пользователя с ID {}", id, friendId);
         return ResponseEntity.ok().build();
@@ -92,7 +81,7 @@ public class UserController {
     возвращаем список пользователей, являющихся его друзьями.
      */
     @GetMapping("/{id}/friends")
-    public ResponseEntity<List<User>> getFriends(@PathVariable int id) {
+    public ResponseEntity<List<User>> getFriends(@PathVariable @Positive int id) {
         log.info("Получение списка друзей пользователя с ID {}", id);
         return ResponseEntity.ok(userService.getFriends(id));
     }
@@ -101,7 +90,7 @@ public class UserController {
     список друзей, общих с другим пользователем.
      */
     @GetMapping("/{id}/friends/common/{otherId}")
-    public ResponseEntity<List<User>> getCommonFriends(@PathVariable int id, @PathVariable int otherId) {
+    public ResponseEntity<List<User>> getCommonFriends(@PathVariable @Positive int id, @PathVariable @Positive int otherId) {
         log.info("Получение списка общих друзей между пользователями с ID {} и ID {}", id, otherId);
         return ResponseEntity.ok(userService.getCommonFriends(id, otherId));
     }

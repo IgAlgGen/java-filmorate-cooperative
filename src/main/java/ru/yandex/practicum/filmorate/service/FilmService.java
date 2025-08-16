@@ -16,9 +16,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FilmService {
 
-    @Qualifier("filmStorage")
+   // @Qualifier("filmStorage")
     private final InMemoryStorage<Film> filmStorage;
-    @Qualifier("userStorage")
+    //@Qualifier("userStorage")
     private final InMemoryStorage<User> userStorage;
 
     public Film getById(int id) {
