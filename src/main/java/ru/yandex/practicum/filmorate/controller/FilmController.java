@@ -47,16 +47,8 @@ public class FilmController {
         try {
             filmValidator.validateFilm(film);
             Film updated = filmService.update(film.getId(), film);
+            log.info("Фильм с ID {} обновлен: {}", film.getId(), updated);
             return ResponseEntity.ok(updated);
-//            return filmService.update(film.getId(), film)
-//                    .map(updatedFilm -> {
-//                        log.info("Фильм с ID {} обновлен: {}", film.getId(), updatedFilm);
-//                        return ResponseEntity.ok(updatedFilm);
-//                    })
-//                    .orElseGet(() -> {
-//                        log.warn("Фильм с ID {} не найден", film.getId());
-//                        return ResponseEntity.status(404).body(film); // Возвращаем 404 Not Found, если фильм не найден
-//                    });
         } catch (ValidationException e) {
             log.warn("Ошибка при обновлении фильма: {}", e.getMessage());
             throw e;
@@ -82,6 +74,7 @@ public class FilmController {
     @PutMapping("/{id}/like/{userId}")
     public ResponseEntity<Void> addLike(@PathVariable int id, @PathVariable int userId) {
         filmService.addLike(id, userId);
+        log.info("Пользователь с ID {} ставит лайк фильму с ID {}", userId, id);
         return ResponseEntity.ok().build();
     }
 
@@ -91,6 +84,7 @@ public class FilmController {
     @DeleteMapping("/{id}/like/{userId}")
     public ResponseEntity<Void> removeLike(@PathVariable int id, @PathVariable int userId) {
         filmService.removeLike(id, userId);
+        log.info("Пользователь с ID {} удаляет лайк к фильму с ID {}", userId, id);
         return ResponseEntity.ok().build();
     }
 
@@ -100,6 +94,7 @@ public class FilmController {
      */
     @GetMapping("/popular")
     public ResponseEntity<List<Film>> getPopular(@RequestParam(defaultValue = "10") int count) {
+        log.info("Получение популярных фильмов, количество: {}", count);
         return ResponseEntity.ok(filmService.getPopular(count));
     }
 }
