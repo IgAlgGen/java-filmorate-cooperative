@@ -41,16 +41,19 @@ public class FilmService {
     public void addLike(int filmId, int userId) {
         // убеждаемся, что фильм и пользователь существуют
         Film film = getById(filmId);
-        userStorage.findById(userId).orElseThrow(() ->
-                new NotFoundException(String.format("Пользователь с id=%d не найден", userId)));
+        checkUserExistence(userId);
         film.addLike(userId);
     }
 
     public void removeLike(int filmId, int userId) {
         Film film = getById(filmId);
+        checkUserExistence(userId);
+        film.removeLike(userId);
+    }
+
+    private void checkUserExistence(int userId) {
         userStorage.findById(userId).orElseThrow(() ->
                 new NotFoundException(String.format("Пользователь с id=%d не найден", userId)));
-        film.removeLike(userId);
     }
 
     public List<Film> getPopular(int count) {
