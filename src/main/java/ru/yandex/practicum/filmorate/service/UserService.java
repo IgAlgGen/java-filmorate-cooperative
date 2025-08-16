@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserService {
 
-    @Qualifier("userStorage")
     private final InMemoryStorage<User> userStorage;
 
     public User getById(int id) {
