@@ -21,22 +21,22 @@ public class InMemoryStorageImpl<T extends Identifiable> implements InMemoryStor
         int id = counter.getAndIncrement();
         item.setId(id);
         storage.put(id, item);
-        return item; // Возвращаем созданный элемент
+        return item;
     }
 
     @Override
     public Optional<T> update(int id, T item) {
         if (!storage.containsKey(id)) {
-            return Optional.empty(); // Если элемент не найден, возвращаем пустой Optional
+            return Optional.empty();
         }
-        item.setId(id); // Устанавливаем ID для обновляемого элемента
+        item.setId(id);
         storage.put(id, item);
-        return Optional.of(item);// Возвращаем обновленный элемент
+        return Optional.of(item);
     }
 
     @Override
     public List<T> findAll() {
-        return new ArrayList<>(storage.values()); // Возвращаем список всех элементов
+        return new ArrayList<>(storage.values());
     }
 
     @Override

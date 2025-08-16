@@ -34,7 +34,6 @@ public class UserService {
                 new NotFoundException(String.format("Пользователь с id=%d не найден", id)));
     }
 
-    // Друзья
 
     public void addFriend(int userId, int friendId) {
         if (userId == friendId) {

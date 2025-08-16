@@ -25,7 +25,6 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<User> create(@Valid @RequestBody User user) {
-        // если name пустой — подставим login
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
@@ -47,7 +46,7 @@ public class UserController {
     @GetMapping
     public ResponseEntity<List<User>> getAll() {
         log.info("Получение списка всех пользователей");
-        return ResponseEntity.ok(userService.getAll()); // Возвращаем список всех пользователей с кодом 200
+        return ResponseEntity.ok(userService.getAll());
     }
 
     @GetMapping("/{id}")
@@ -55,10 +54,8 @@ public class UserController {
         return ResponseEntity.ok(userService.getById(id));
     }
 
-// ДРУЖБА
-
-    /*
-    добавление в друзья.
+    /**
+    Добавление в друзья.
      */
     @PutMapping("/{id}/friends/{friendId}")
     public ResponseEntity<Void> addFriend(@PathVariable @Positive int id, @PathVariable @Positive int friendId) {
@@ -67,8 +64,8 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    /*
-    удаление из друзей.
+    /**
+    Удаление из друзей.
      */
     @DeleteMapping("/{id}/friends/{friendId}")
     public ResponseEntity<Void> removeFriend(@PathVariable @Positive int id, @PathVariable @Positive int friendId) {
@@ -77,8 +74,8 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    /*
-    возвращаем список пользователей, являющихся его друзьями.
+    /**
+    Возвращаем список пользователей, являющихся его друзьями.
      */
     @GetMapping("/{id}/friends")
     public ResponseEntity<List<User>> getFriends(@PathVariable @Positive int id) {
@@ -86,8 +83,8 @@ public class UserController {
         return ResponseEntity.ok(userService.getFriends(id));
     }
 
-    /*
-    список друзей, общих с другим пользователем.
+    /**
+    Список друзей, общих с другим пользователем.
      */
     @GetMapping("/{id}/friends/common/{otherId}")
     public ResponseEntity<List<User>> getCommonFriends(@PathVariable @Positive int id, @PathVariable @Positive int otherId) {

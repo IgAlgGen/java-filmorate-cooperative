@@ -54,10 +54,8 @@ public class FilmController {
         return ResponseEntity.ok(filmService.getById(id));
     }
 
-    // ЛАЙКИ И ПОПУЛЯРНЫЕ
-
-    /*
-    пользователь ставит лайк фильму
+    /**
+    Пользователь ставит лайк фильму
      */
     @PutMapping("/{id}/like/{userId}")
     public ResponseEntity<Void> addLike(@PathVariable @Positive int id, @PathVariable @Positive int userId) {
@@ -66,8 +64,8 @@ public class FilmController {
         return ResponseEntity.ok().build();
     }
 
-    /*
-    пользователь удаляет лайк.
+    /**
+    Пользователь удаляет лайк.
      */
     @DeleteMapping("/{id}/like/{userId}")
     public ResponseEntity<Void> removeLike(@PathVariable @Positive int id, @PathVariable @Positive int userId) {
@@ -76,7 +74,7 @@ public class FilmController {
         return ResponseEntity.ok().build();
     }
 
-    /*
+    /**
     Возвращает список из первых count фильмов по количеству лайков.
     Если значение параметра count не задано, верните первые 10.
      */
