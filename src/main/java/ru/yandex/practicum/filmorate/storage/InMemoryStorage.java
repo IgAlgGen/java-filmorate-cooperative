@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.service;
+package ru.yandex.practicum.filmorate.storage;
 
 import ru.yandex.practicum.filmorate.model.Identifiable;
 
@@ -20,4 +20,9 @@ public interface InMemoryStorage<T extends Identifiable> {
      * Находит все элементы в хранилище.
      */
     List<T> findAll();
+
+    /**
+     * Находит элемент по идентификатору.
+     */
+    Optional<T> findById(int id);
 }
