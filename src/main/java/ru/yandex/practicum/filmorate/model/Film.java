@@ -32,11 +32,10 @@ public class Film implements Identifiable {
     private String description;
     @Positive(message = "Продолжительность фильма должна быть положительным числом.")
     private int duration;
-
-    /**
-     * Множество идентификаторов пользователей, поставивших лайк.
-     */
     private Set<Integer> likes = new HashSet<>();
+    private Set<Genre> genres = new HashSet<>();
+    @NotNull
+    private MpaRating mpa;
 
     public void addLike(int userId) {
         likes.add(userId);

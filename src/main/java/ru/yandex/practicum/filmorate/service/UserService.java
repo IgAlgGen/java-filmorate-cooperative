@@ -41,20 +41,20 @@ public class UserService {
         }
         User u1 = getById(userId);
         User u2 = getById(friendId);
-        u1.addFriend(friendId);
-        u2.addFriend(userId);
+        u1.requestFriendship(friendId);
+        u2.requestFriendship(userId);
     }
 
     public void removeFriend(int userId, int friendId) {
         User u1 = getById(userId);
         User u2 = getById(friendId);
-        u1.removeFriend(friendId);
-        u2.removeFriend(userId);
+        u1.removeFriendship(friendId);
+        u2.removeFriendship(userId);
     }
 
     public List<User> getFriends(int userId) {
         User user = getById(userId);
-        return user.getFriends().stream()
+        return user.getFriends().keySet().stream()
                 .map(this::getById)
                 .collect(Collectors.toList());
     }
@@ -62,8 +62,8 @@ public class UserService {
     public List<User> getCommonFriends(int userId, int otherId) {
         User u1 = getById(userId);
         User u2 = getById(otherId);
-        Set<Integer> common = u1.getFriends().stream()
-                .filter(u2.getFriends()::contains)
+        Set<Integer> common = u1.getFriends().keySet().stream()
+                .filter(u2.getFriends()::containsKey)
                 .collect(Collectors.toSet());
         return common.stream().map(this::getById).collect(Collectors.toList());
     }
