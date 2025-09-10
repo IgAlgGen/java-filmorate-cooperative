@@ -27,13 +27,4 @@ public class User implements Identifiable {
     private LocalDate birthday;
     private Map<Integer, FriendshipStatus> friends = new HashMap<>();
 
-    public void requestFriendship(int otherUserId) {
-        friends.put(otherUserId, FriendshipStatus.UNCONFIRMED);
-    }
-    public void confirmFriendship(int otherUserId) {
-        friends.put(otherUserId, FriendshipStatus.CONFIRMED);
-    }
-    public void removeFriendship(int otherUserId) {
-        friends.remove(otherUserId);
-    }
 }

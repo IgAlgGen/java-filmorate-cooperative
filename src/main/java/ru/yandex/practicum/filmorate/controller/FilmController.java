@@ -38,7 +38,7 @@ public class FilmController {
             log.error("Пустой JSON в запросе обновления фильма");
             return ResponseEntity.status(500).build(); // возвращаем 500 Internal Server Error
         }
-        Film updated = filmService.update(film.getId(), film);
+        Film updated = filmService.update(film);
         log.info("Фильм с ID {} обновлен: {}", film.getId(), updated);
         return ResponseEntity.ok(updated);
     }
@@ -51,7 +51,14 @@ public class FilmController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Film> getById(@PathVariable int id) {
-        return ResponseEntity.ok(filmService.getById(id));
+        return ResponseEntity.ok(filmService.get(id));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable @Positive int id) {
+        filmService.delete(id);
+        log.info("Фильм с ID {} удален", id);
+        return ResponseEntity.noContent().build();
     }
 
     /**

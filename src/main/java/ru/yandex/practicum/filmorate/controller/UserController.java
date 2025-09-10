@@ -37,7 +37,7 @@ public class UserController {
     @PutMapping
     public ResponseEntity<User> update(@Valid @RequestBody User user) {
         log.info("Обновление пользователя с ID {}: {}", user.getId(), user.toString());
-        User updated = userService.update(user.getId(), user);
+        User updated = userService.update(user);
         log.info("Пользователь с ID {} обновлен: {}", user.getId(), updated);
         return ResponseEntity.ok(updated);
     }
@@ -51,7 +51,14 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<User> getById(@PathVariable @Positive int id) {
-        return ResponseEntity.ok(userService.getById(id));
+        return ResponseEntity.ok(userService.get(id));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable @Positive int id) {
+        userService.delete(id);
+        log.info("Пользователь с ID {} удален", id);
+        return ResponseEntity.noContent().build();
     }
 
     /**
