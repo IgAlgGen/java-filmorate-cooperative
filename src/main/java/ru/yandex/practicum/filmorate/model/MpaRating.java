@@ -1,16 +1,21 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+@JsonFormat(shape = JsonFormat.Shape.OBJECT)
 @Getter
 @RequiredArgsConstructor
 public enum MpaRating {
     G(1, "G"),
     PG(2, "PG"),
-    PG_13(3, "PG-13"),
+    PG_13(3, "PG_13"),
     R(4, "R"),
-    NC_17(5, "NC-17");
+    NC_17(5, "NC_17");
 
     private final int id;
     private final String title;
@@ -22,5 +27,16 @@ public enum MpaRating {
             }
         }
         throw new IllegalArgumentException("Неизвестный MPA id: " + id);
+    }
+
+    @JsonCreator
+    public static MpaRating fromJson(JsonNode node) {
+        if (node.isInt()) {
+            return fromId(node.asInt());
+        }
+        if (node.isObject() && node.has("id")) {
+            return fromId(node.get("id").asInt());
+        }
+        throw new IllegalArgumentException("неизвестный MPA: " + node);
     }
 }

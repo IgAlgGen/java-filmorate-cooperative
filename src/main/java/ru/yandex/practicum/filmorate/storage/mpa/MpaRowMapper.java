@@ -9,6 +9,7 @@ public class MpaRowMapper implements RowMapper<MpaRating> {
     @Override
     public MpaRating mapRow(ResultSet rs, int rowNum) throws SQLException {
         int id = rs.getInt("id");
+        String name = rs.getString("name");
         return MpaRating.fromId(id);
     }
 }

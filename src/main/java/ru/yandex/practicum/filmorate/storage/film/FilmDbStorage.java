@@ -46,7 +46,7 @@ public class FilmDbStorage implements FilmStorage {
                 film.getDescription(),
                 film.getReleaseDate(),
                 film.getDuration(),
-                film.getMpa() != null ? film.getMpa().name() : null,
+                film.getMpa() != null ? film.getMpa().getId() : 1,
                 film.getId()
         );
         if (updated == 0) {

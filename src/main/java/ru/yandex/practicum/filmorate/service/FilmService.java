@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -9,6 +10,7 @@ import ru.yandex.practicum.filmorate.storage.filmLike.FilmLikeStorage;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FilmService {
@@ -20,11 +22,22 @@ public class FilmService {
     private final FilmLikeStorage likeStorage;
 
     public Film create(Film f) {
-        return filmStorage.create(f);
+        log.debug("Создание фильма: name='{}', releaseDate={}, duration={}", f.getName(), f.getReleaseDate(), f.getDuration());
+        Film savedFilm = filmStorage.create(f);
+        log.info("Фильм создан: id={}, title='{}'", savedFilm.getId(), savedFilm.getName());
+        return savedFilm;
     }
 
     public Film update(Film f) {
-        return filmStorage.update(f);
+        log.debug("Обновление фильма: id={}, name='{}', releaseDate={}, duration={}, mpa='{}'",
+                f.getId(),
+                f.getName(),
+                f.getReleaseDate(),
+                f.getDuration(),
+                f.getMpa());
+        Film updatedFilm = filmStorage.update(f);
+        log.info("Фильм обновлен: id={}, title='{}'", updatedFilm.getId(), updatedFilm.getName());
+        return updatedFilm;
     }
 
     public Film get(int id) {
@@ -32,7 +45,10 @@ public class FilmService {
     }
 
     public List<Film> getAll() {
-        return filmStorage.findAll();
+        log.debug("Поиск всех фильмов");
+        List<Film> list = filmStorage.findAll();
+        log.debug("Найдено {} фильмов", list.size());
+        return list;
     }
 
     public void delete(int id) {

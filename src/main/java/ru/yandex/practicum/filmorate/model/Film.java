@@ -34,7 +34,5 @@ public class Film implements Identifiable {
     private int duration;
     @NotNull
     private MpaRating mpa;
-    private Set<Long> likes = new HashSet<>();
-    private Set<Genre> genres = new HashSet<>();
 
 }
