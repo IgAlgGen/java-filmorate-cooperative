@@ -20,7 +20,7 @@ public class FilmRowMapper implements RowMapper<Film> {
         f.setDuration(rs.getInt("duration"));
         String mpaCode = rs.getString("mpa");
         if (mpaCode != null) {
-            f.setMpa(MpaRating.valueOf(mpaCode));
+            f.setMpa(MpaRating.fromId(Integer.parseInt(mpaCode)));
         }
         return f;
     }

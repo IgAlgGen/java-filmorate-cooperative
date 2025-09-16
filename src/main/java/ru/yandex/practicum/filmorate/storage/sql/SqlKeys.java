@@ -83,21 +83,21 @@ public final class SqlKeys {
                 """;
 
         public static final String SQL_LIST_FRIENDS = """
-                SELECT u.id, u.email, u.login, u.name, u.birthday
+                SELECT u.user_id, u.email, u.login, u.name, u.birthday
                 FROM friendships f
-                JOIN users u ON u.id = f.addressee_id
+                JOIN users u ON u.user_id = f.addressee_id
                 WHERE f.requester_id = ? AND f.status = 'CONFIRMED'
-                ORDER BY u.id
+                ORDER BY u.user_id
                 """;
 
         public static final String SQL_COMMON_FRIENDS = """
-                SELECT u.id, u.email, u.login, u.name, u.birthday
+                SELECT u.user_id, u.email, u.login, u.name, u.birthday
                 FROM friendships f1
                 JOIN friendships f2 ON f1.addressee_id = f2.addressee_id
                     AND f1.status = 'CONFIRMED' AND f2.status = 'CONFIRMED'
-                JOIN users u ON u.id = f1.addressee_id
+                JOIN users u ON u.user_id = f1.addressee_id
                 WHERE f1.requester_id = ? AND f2.requester_id = ?
-                ORDER BY u.id
+                ORDER BY u.user_id
                 """;
     }
 
@@ -110,11 +110,11 @@ public final class SqlKeys {
 
         // «Популярные»: оставляем фильмы с 0 лайков (LEFT JOIN), сортируем по COUNT desc
         public static final String SQL_POPULAR = """
-                SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id
+                SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa
                 FROM films f
-                LEFT JOIN film_likes fl ON fl.film_id = f.id
-                GROUP BY f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id
-                ORDER BY COUNT(fl.user_id) DESC, f.id ASC
+                LEFT JOIN film_likes fl ON fl.film_id = f.film_id
+                GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa
+                ORDER BY COUNT(fl.user_id) DESC, f.film_id ASC
                 LIMIT ?
                 """;
     }

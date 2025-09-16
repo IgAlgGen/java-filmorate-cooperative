@@ -25,6 +25,6 @@ public class User implements Identifiable {
     private String email;
     @Past(message = "Дата рождения не может быть в будущем")
     private LocalDate birthday;
-    private Map<Integer, FriendshipStatus> friends = new HashMap<>();
+//    private Map<Integer, FriendshipStatus> friends = new HashMap<>();
 
 }
