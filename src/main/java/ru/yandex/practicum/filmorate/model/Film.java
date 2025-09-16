@@ -32,9 +32,9 @@ public class Film implements Identifiable {
     private String description;
     @Positive(message = "Продолжительность фильма должна быть положительным числом.")
     private int duration;
-    private Set<Long> likes = new HashSet<>();
-    private Set<Genre> genres = new HashSet<>();
     @NotNull
     private MpaRating mpa;
+    private Set<Long> likes = new HashSet<>();
+    private Set<Genre> genres = new HashSet<>();
 
 }

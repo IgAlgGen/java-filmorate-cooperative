@@ -7,7 +7,6 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.MpaRating;
 
 import java.util.*;
 
@@ -32,7 +31,7 @@ public class FilmDbStorage implements FilmStorage {
         params.put("description", film.getDescription());
         params.put("release_date", film.getReleaseDate());
         params.put("duration", film.getDuration());
-        params.put("mpa", film.getMpa() != null ? film.getMpa().name() : null);
+        params.put("mpa", film.getMpa() != null ? film.getMpa().getId() : 1);
         Number key = insert.executeAndReturnKey(params);
         film.setId(key.intValue());
         return film;
