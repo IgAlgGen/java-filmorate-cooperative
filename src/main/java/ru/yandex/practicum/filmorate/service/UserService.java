@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
@@ -9,6 +10,7 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -21,10 +23,14 @@ public class UserService {
 
 
     public User create(User u) {
-        return userStorage.create(u);
+        log.debug("Создание пользователя: email='{}', login='{}', birthday={}", u.getEmail(), u.getLogin(), u.getBirthday());
+        User createdUser = userStorage.create(u);
+        log.info("Пользователь создан: id={}, login='{}'", createdUser.getId(), createdUser.getLogin());
+        return createdUser;
     }
 
     public User update(User u) {
+
         return userStorage.update(u);
     }
 
