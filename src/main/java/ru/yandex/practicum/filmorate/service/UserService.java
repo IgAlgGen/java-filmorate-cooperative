@@ -25,46 +25,72 @@ public class UserService {
     public User create(User u) {
         log.debug("Создание пользователя: email='{}', login='{}', birthday={}", u.getEmail(), u.getLogin(), u.getBirthday());
         User createdUser = userStorage.create(u);
-        log.info("Пользователь создан: id={}, login='{}'", createdUser.getId(), createdUser.getLogin());
+        log.debug("Пользователь создан: id={}, login='{}'", createdUser.getId(), createdUser.getLogin());
         return createdUser;
     }
 
     public User update(User u) {
-
-        return userStorage.update(u);
+        log.debug("Обновление пользователя: id={}, email='{}', login='{}', birthday={}",
+                u.getId(),
+                u.getEmail(),
+                u.getLogin(),
+                u.getBirthday());
+        User existingUser = userStorage.update(u);
+        log.debug("Пользователь обновлен: id={}, login='{}'", existingUser.getId(), existingUser.getLogin());
+        return existingUser;
     }
 
-    public User get(int id) {
-        return userStorage.findById(id).orElseThrow();
+    public User getById(int id) {
+        log.debug("Поиск пользователя по ID {}", id);
+        User user = userStorage.findById(id).orElseThrow();
+        log.debug("Найден пользователь: id={}, login='{}'", user.getId(), user.getLogin());
+        return user;
     }
 
     public List<User> getAll() {
-        return userStorage.findAll();
+        log.debug("Поиск всех пользователей");
+        List<User> list = userStorage.findAll();
+        log.debug("Найдено {} пользователей", list.size());
+        return list;
     }
 
     public void delete(int id) {
+        log.debug("Удаление пользователя с ID {}", id);
         userStorage.deleteById(id);
+        log.debug("Пользователь с ID {} удален", id);
     }
 
     public boolean exists(int id) {
+        log.debug("Проверка существования пользователя с ID {}", id);
         return userStorage.existsById(id);
     }
 
     public void addFriend(int userId, int friendId) {
+        log.debug("Пользователь с ID {} добавляет в друзья пользователя с ID {}", userId, friendId);
         // (опционально) checkUserExistence(userId); checkUserExistence(friendId);
         friendshipStorage.addFriend(userId, friendId);
+        log.debug("Пользователь с ID {} добавил в друзья пользователя с ID {}", userId, friendId);
     }
 
     public void removeFriend(int userId, int friendId) {
+        log.debug("Пользователь с ID {} удаляет из друзей пользователя с ID {}", userId, friendId);
+        // (опционально) checkUserExistence(userId); checkUserExistence(friend
         friendshipStorage.removeFriend(userId, friendId);
+        log.debug("Пользователь с ID {} удалил из друзей пользователя с ID {}", userId, friendId);
     }
 
     public List<User> getFriends(int userId) {
-        return friendshipStorage.findFriendsOf(userId);
+        log.debug("Получение списка друзей пользователя с ID {}", userId);
+        List<User> friends = friendshipStorage.findFriendsOf(userId);
+        log.debug("Найдено {} друзей пользователя с ID {}", friends.size(), userId);
+        return friends;
     }
 
     public List<User> getCommonFriends(int userId, int otherId) {
-        return friendshipStorage.findCommonFriends(userId, otherId);
+        log.debug("Получение списка общих друзей пользователей с ID {} и ID {}", userId, otherId);
+        List<User> commonFriends = friendshipStorage.findCommonFriends(userId, otherId);
+        log.debug("Найдено {} общих друзей пользователей с ID {} и ID {}", commonFriends.size(), userId, otherId);
+        return commonFriends;
     }
 
 }

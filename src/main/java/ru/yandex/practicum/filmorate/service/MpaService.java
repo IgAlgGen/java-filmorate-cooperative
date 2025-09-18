@@ -23,6 +23,12 @@ public class MpaService {
 
     public MpaRating findById(int id) {
         log.debug("Поиск рейтинга MPA по ID {}", id);
-        return mpaStorage.findById(id).orElse(null);
+        MpaRating mpa = mpaStorage.findById(id).orElse(null);
+        if (mpa != null) {
+            log.debug("Найден рейтинг MPA: id={}, name='{}'", mpa.getId(), mpa.getTitle());
+        } else {
+            log.debug("Рейтинг MPA с ID {} не найден", id);
+        }
+        return mpa;
     }
 }

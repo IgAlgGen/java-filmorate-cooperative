@@ -25,6 +25,7 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<User> create(@Valid @RequestBody User user) {
+        log.info("Добавление пользователя: {}", user.toString());
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
@@ -51,11 +52,13 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<User> getById(@PathVariable @Positive int id) {
-        return ResponseEntity.ok(userService.get(id));
+        log.info("Получение пользователя с ID {}", id);
+        return ResponseEntity.ok(userService.getById(id));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable @Positive int id) {
+        log.info("Удаление пользователя с ID {}", id);
         userService.delete(id);
         log.info("Пользователь с ID {} удален", id);
         return ResponseEntity.noContent().build();
@@ -66,8 +69,9 @@ public class UserController {
      */
     @PutMapping("/{id}/friends/{friendId}")
     public ResponseEntity<Void> addFriend(@PathVariable @Positive int id, @PathVariable @Positive int friendId) {
-        userService.addFriend(id, friendId);
         log.info("Пользователь с ID {} добавляет в друзья пользователя с ID {}", id, friendId);
+        userService.addFriend(id, friendId);
+        log.info("Пользователь с ID {} добавил в друзья пользователя с ID {}", id, friendId);
         return ResponseEntity.ok().build();
     }
 
@@ -76,8 +80,9 @@ public class UserController {
      */
     @DeleteMapping("/{id}/friends/{friendId}")
     public ResponseEntity<Void> removeFriend(@PathVariable @Positive int id, @PathVariable @Positive int friendId) {
-        userService.removeFriend(id, friendId);
         log.info("Пользователь с ID {} удаляет из друзей пользователя с ID {}", id, friendId);
+        userService.removeFriend(id, friendId);
+        log.info("Пользователь с ID {} удалил из друзей пользователя с ID {}", id, friendId);
         return ResponseEntity.ok().build();
     }
 

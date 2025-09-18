@@ -16,11 +16,19 @@ public class GenreService {
 
     public List<Genre> findAll() {
         log.debug("Поиск всех жанров");
-        return genreStorage.findAll();
+        List<Genre> list = genreStorage.findAll();
+        log.debug("Найдено {} жанров", list.size());
+        return list;
     }
 
     public Genre findById(int id) {
         log.debug("Поиск жанра по ID {}", id);
-        return genreStorage.findById(id).orElse(null);
+        Genre genre = genreStorage.findById(id).orElse(null);
+        if (genre != null) {
+            log.debug("Найден жанр: id={}, name='{}'", genre.getId(), genre.getName());
+        } else {
+            log.debug("Жанр с ID {} не найден", id);
+        }
+        return genre;
     }
 }

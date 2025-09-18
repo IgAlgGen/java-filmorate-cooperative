@@ -46,16 +46,20 @@ public class FilmController {
     @GetMapping
     public ResponseEntity<List<Film>> getAll() {
         log.info("Получение списка всех фильмов");
-        return ResponseEntity.ok(filmService.getAll());
+        List<Film> films = filmService.getAll();
+        log.info("Найдено {} фильмов", films.size());
+        return ResponseEntity.ok(films);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Film> getById(@PathVariable int id) {
+        log.info("Получение фильма с ID {}", id);
         return ResponseEntity.ok(filmService.get(id));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable @Positive int id) {
+        log.info("Удаление фильма с ID {}", id);
         filmService.delete(id);
         log.info("Фильм с ID {} удален", id);
         return ResponseEntity.noContent().build();
@@ -66,8 +70,8 @@ public class FilmController {
      */
     @PutMapping("/{id}/like/{userId}")
     public ResponseEntity<Void> addLike(@PathVariable @Positive int id, @PathVariable @Positive int userId) {
-        filmService.addLike(id, userId);
         log.info("Пользователь с ID {} ставит лайк фильму с ID {}", userId, id);
+        filmService.addLike(id, userId);
         return ResponseEntity.ok().build();
     }
 
@@ -76,8 +80,8 @@ public class FilmController {
      */
     @DeleteMapping("/{id}/like/{userId}")
     public ResponseEntity<Void> removeLike(@PathVariable @Positive int id, @PathVariable @Positive int userId) {
-        filmService.removeLike(id, userId);
         log.info("Пользователь с ID {} удаляет лайк к фильму с ID {}", userId, id);
+        filmService.removeLike(id, userId);
         return ResponseEntity.ok().build();
     }
 
