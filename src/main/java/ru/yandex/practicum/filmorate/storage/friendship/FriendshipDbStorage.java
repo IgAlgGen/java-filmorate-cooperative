@@ -82,7 +82,7 @@ public class FriendshipDbStorage implements FriendshipStorage {
 
     private void assertUserExists(int id) {
         Boolean ok = jdbcTemplate.queryForObject(SQL_USER_EXISTS, Boolean.class, id);
-        if (!Boolean.TRUE.equals(ok)) {
+        if (!ok) {
             throw new NotFoundException("Пользователь не найден: id=" + id);
         }
     }

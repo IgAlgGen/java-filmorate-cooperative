@@ -6,57 +6,57 @@ public final class SqlKeys {
 
     public static final class User {
         public static final String SQL_SELECT_ALL = """
-                SELECT user_id, email, login, name, birthday
-                FROM users
-                ORDER BY user_id
+                SELECT u.id, u.email, u.login, u.name, u.birthday
+                FROM users u
+                ORDER BY u.id
                 """;
 
         public static final String SQL_SELECT_BY_ID = """
-                SELECT user_id, email, login, name, birthday
-                FROM users
-                WHERE user_id = ?
+                SELECT u.id, u.email, u.login, u.name, u.birthday
+                FROM users u
+                WHERE u.id = ?
                 """;
 
         public static final String SQL_UPDATE = """
                 UPDATE users
                 SET email = ?, login = ?, name = ?, birthday = ?
-                WHERE user_id = ?
+                WHERE id = ?
                 """;
 
         public static final String SQL_DELETE = """
-                DELETE FROM users WHERE user_id = ?
+                DELETE FROM users WHERE id = ?
                 """;
 
         public static final String SQL_USER_EXISTS = """
-                SELECT EXISTS(SELECT 1 FROM users WHERE user_id = ?)
+                SELECT EXISTS(SELECT 1 FROM users WHERE id = ?)
                 """;
     }
 
     public static final class Film {
         public static final String SQL_SELECT_ALL = """
-                SELECT film_id, name, description, release_date, duration, mpa
-                FROM films
-                ORDER BY film_id
+                SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa
+                FROM films f
+                ORDER BY f.id
                 """;
 
         public static final String SQL_SELECT_BY_ID = """
-                SELECT film_id, name, description, release_date, duration, mpa
-                FROM films
-                WHERE film_id = ?
+                SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa
+                FROM films f
+                WHERE f.id = ?
                 """;
 
         public static final String SQL_UPDATE = """
                 UPDATE films
                 SET name = ?, description = ?, release_date = ?, duration = ?, mpa = ?
-                WHERE film_id = ?
+                WHERE id = ?
                 """;
 
         public static final String SQL_DELETE = """
-                DELETE FROM films WHERE film_id = ?
+                DELETE FROM films WHERE id = ?
                 """;
 
         public static final String SQL_FILM_EXISTS = """
-                SELECT EXISTS(SELECT 1 FROM films WHERE film_id = ?)
+                SELECT EXISTS(SELECT 1 FROM films WHERE id = ?)
                 """;
     }
 
@@ -83,21 +83,21 @@ public final class SqlKeys {
                 """;
 
         public static final String SQL_LIST_FRIENDS = """
-                SELECT u.user_id, u.email, u.login, u.name, u.birthday
+                SELECT u.id, u.email, u.login, u.name, u.birthday
                 FROM friendships f
-                JOIN users u ON u.user_id = f.addressee_id
+                JOIN users u ON u.id = f.addressee_id
                 WHERE f.requester_id = ? AND f.status = 'CONFIRMED'
-                ORDER BY u.user_id
+                ORDER BY u.id
                 """;
 
         public static final String SQL_COMMON_FRIENDS = """
-                SELECT u.user_id, u.email, u.login, u.name, u.birthday
+                SELECT u.id, u.email, u.login, u.name, u.birthday
                 FROM friendships f1
                 JOIN friendships f2 ON f1.addressee_id = f2.addressee_id
                     AND f1.status = 'CONFIRMED' AND f2.status = 'CONFIRMED'
-                JOIN users u ON u.user_id = f1.addressee_id
+                JOIN users u ON u.id = f1.addressee_id
                 WHERE f1.requester_id = ? AND f2.requester_id = ?
-                ORDER BY u.user_id
+                ORDER BY u.id
                 """;
     }
 
@@ -110,11 +110,11 @@ public final class SqlKeys {
 
         // «Популярные»: оставляем фильмы с 0 лайков (LEFT JOIN), сортируем по COUNT desc
         public static final String SQL_POPULAR = """
-                SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa
+                SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa
                 FROM films f
-                LEFT JOIN film_likes fl ON fl.film_id = f.film_id
-                GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa
-                ORDER BY COUNT(fl.user_id) DESC, f.film_id ASC
+                LEFT JOIN film_likes fl ON fl.film_id = f.id
+                GROUP BY f.id, f.name, f.description, f.release_date, f.duration, f.mpa
+                ORDER BY COUNT(fl.user_id) DESC, f.id ASC
                 LIMIT ?
                 """;
     }

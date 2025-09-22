@@ -50,15 +50,23 @@ public class FilmService {
     public Film getById(int id) {
         log.debug("Поиск фильма по ID {}", id);
         Film film = filmStorage.findById(id).orElseThrow();
-        log.debug("Найден фильм: id={}, title='{}'", film.getId(), film.getName());
-        Set<Genre> genreSet = genreStorage.findGeneresByFilmId(id);
+        log.debug("Загрузка жанров для фильма с ID {}: {}", film.getId(), film.getGenres());
+        Set<Genre> genreSet = genreStorage.findByFilmId(id);
         film.setGenres(genreSet);
+        log.debug("Жанры для фильма с ID {} загружены: {}", film.getId(), film.getGenres());
+        log.debug("Найден фильм: id={}, title='{}'", film.getId(), film.getName());
         return film;
     }
 
     public List<Film> getAll() {
         log.debug("Поиск всех фильмов");
         List<Film> list = filmStorage.findAll();
+        for (Film film : list) {
+            log.debug("Загрузка жанров для фильма с ID {}: {}", film.getId(), film.getGenres());
+            Set<Genre> genreSet = genreStorage.findByFilmId(film.getId());
+            film.setGenres(genreSet);
+            log.debug("Жанры для фильма с ID {} загружены: {}", film.getId(), film.getGenres());
+        }
         log.debug("Найдено {} фильмов", list.size());
         return list;
     }

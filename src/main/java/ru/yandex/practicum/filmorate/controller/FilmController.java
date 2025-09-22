@@ -26,7 +26,6 @@ public class FilmController {
     public ResponseEntity<Film> create(@Valid @RequestBody Film film) {
         log.info("Добавление фильма: {}", film.toString());
         Film created = filmService.create(film);
-        log.info("Фильм добавлен: {}", created.toString());
         URI location = URI.create("/films/" + created.getId());
         return ResponseEntity.created(location).body(created);
     }
@@ -47,7 +46,6 @@ public class FilmController {
     public ResponseEntity<List<Film>> getAll() {
         log.info("Получение списка всех фильмов");
         List<Film> films = filmService.getAll();
-        log.info("Найдено {} фильмов", films.size());
         return ResponseEntity.ok(films);
     }
 
@@ -61,7 +59,6 @@ public class FilmController {
     public ResponseEntity<Void> delete(@PathVariable @Positive int id) {
         log.info("Удаление фильма с ID {}", id);
         filmService.delete(id);
-        log.info("Фильм с ID {} удален", id);
         return ResponseEntity.noContent().build();
     }
 

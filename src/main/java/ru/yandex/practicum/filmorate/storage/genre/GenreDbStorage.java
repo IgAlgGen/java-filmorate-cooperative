@@ -56,7 +56,6 @@ public class GenreDbStorage implements GenreStorage {
         return count != null && count > 0;
     }
 
-
     @Override
     @Transactional
     public void renewGenres(int filmId, Set<Genre> genres) {
@@ -80,7 +79,7 @@ public class GenreDbStorage implements GenreStorage {
     }
 
     @Override
-    public Set<Genre> findGeneresByFilmId(int filmId) {
+    public Set<Genre> findByFilmId(int filmId) {
         return new LinkedHashSet<>(jdbcTemplate.query(
                 "SELECT g.id, g.name\n" +
                 "    FROM genres g\n" +

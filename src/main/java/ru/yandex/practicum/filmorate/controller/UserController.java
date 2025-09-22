@@ -30,7 +30,6 @@ public class UserController {
             user.setName(user.getLogin());
         }
         User created = userService.create(user);
-        log.info("Пользователь добавлен: {}", created.toString());
         URI location = URI.create("/users/" + created.getId());
         return ResponseEntity.created(location).body(created);
     }
@@ -39,7 +38,6 @@ public class UserController {
     public ResponseEntity<User> update(@Valid @RequestBody User user) {
         log.info("Обновление пользователя с ID {}: {}", user.getId(), user.toString());
         User updated = userService.update(user);
-        log.info("Пользователь с ID {} обновлен: {}", user.getId(), updated);
         return ResponseEntity.ok(updated);
     }
 
@@ -60,7 +58,6 @@ public class UserController {
     public ResponseEntity<Void> delete(@PathVariable @Positive int id) {
         log.info("Удаление пользователя с ID {}", id);
         userService.delete(id);
-        log.info("Пользователь с ID {} удален", id);
         return ResponseEntity.noContent().build();
     }
 
@@ -71,7 +68,6 @@ public class UserController {
     public ResponseEntity<Void> addFriend(@PathVariable @Positive int id, @PathVariable @Positive int friendId) {
         log.info("Пользователь с ID {} добавляет в друзья пользователя с ID {}", id, friendId);
         userService.addFriend(id, friendId);
-        log.info("Пользователь с ID {} добавил в друзья пользователя с ID {}", id, friendId);
         return ResponseEntity.ok().build();
     }
 
@@ -82,7 +78,6 @@ public class UserController {
     public ResponseEntity<Void> removeFriend(@PathVariable @Positive int id, @PathVariable @Positive int friendId) {
         log.info("Пользователь с ID {} удаляет из друзей пользователя с ID {}", id, friendId);
         userService.removeFriend(id, friendId);
-        log.info("Пользователь с ID {} удалил из друзей пользователя с ID {}", id, friendId);
         return ResponseEntity.ok().build();
     }
 

@@ -29,12 +29,12 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
 
     private void assertFilmExists(int filmId) {
         Boolean ok = jdbc.queryForObject(SQL_FILM_EXISTS, Boolean.class, filmId);
-        if (!Boolean.TRUE.equals(ok)) throw new NotFoundException("Фильм не найден: id=" + filmId);
+        if (!ok) throw new NotFoundException("Фильм не найден: id=" + filmId);
     }
 
     private void assertUserExists(int userId) {
         Boolean ok = jdbc.queryForObject(SQL_USER_EXISTS, Boolean.class, userId);
-        if (!Boolean.TRUE.equals(ok)) throw new NotFoundException("Пользователь не найден: id=" + userId);
+        if (!ok) throw new NotFoundException("Пользователь не найден: id=" + userId);
     }
 
     @Override
@@ -55,7 +55,6 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
 
     @Override
     public List<Film> findPopular(int limit) {
-        // limit приходит положительным из контроллера по аннотации @Positive
         return jdbc.query(SQL_POPULAR, FILM_MAPPER, limit);
     }
 }
