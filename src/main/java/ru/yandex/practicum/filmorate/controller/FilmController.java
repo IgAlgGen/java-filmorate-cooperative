@@ -33,10 +33,6 @@ public class FilmController {
     @PutMapping
     public ResponseEntity<Film> update(@Valid @RequestBody(required = false) Film film) {
         log.info("Обновление фильма с ID {}: {}", film.getId(), film.toString());
-        if (film == null) {
-            log.error("Пустой JSON в запросе обновления фильма");
-            return ResponseEntity.status(500).build(); // возвращаем 500 Internal Server Error
-        }
         Film updated = filmService.update(film);
         log.info("Фильм с ID {} обновлен: {}", film.getId(), updated);
         return ResponseEntity.ok(updated);

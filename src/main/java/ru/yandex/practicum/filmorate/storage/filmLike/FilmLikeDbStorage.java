@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.storage.filmLike;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,8 +14,6 @@ import java.util.List;
 import static ru.yandex.practicum.filmorate.storage.sql.SqlKeys.FilmLike.*;
 import static ru.yandex.practicum.filmorate.storage.sql.SqlKeys.Film.SQL_FILM_EXISTS;
 import static ru.yandex.practicum.filmorate.storage.sql.SqlKeys.User.SQL_USER_EXISTS;
-
-
 
 @Repository
 @RequiredArgsConstructor
