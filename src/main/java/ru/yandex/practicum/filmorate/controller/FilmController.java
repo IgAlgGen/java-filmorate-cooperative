@@ -54,7 +54,7 @@ public class FilmController {
     @GetMapping("/{id}")
     public ResponseEntity<Film> getById(@PathVariable int id) {
         log.info("Получение фильма с ID {}", id);
-        return ResponseEntity.ok(filmService.get(id));
+        return ResponseEntity.ok(filmService.getById(id));
     }
 
     @DeleteMapping("/{id}")

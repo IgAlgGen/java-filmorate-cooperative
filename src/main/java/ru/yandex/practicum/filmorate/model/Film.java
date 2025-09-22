@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import ru.yandex.practicum.filmorate.service.validators.constraints.ReleaseDateMin;
@@ -34,5 +35,5 @@ public class Film implements Identifiable {
     private int duration;
     @NotNull
     private MpaRating mpa;
-
+    private Set<Genre> genres = new LinkedHashSet<>();
 }
