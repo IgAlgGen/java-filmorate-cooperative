@@ -36,13 +36,13 @@ public class FriendshipDbStorage implements FriendshipStorage {
         assertUserExists(friendId);
 
         // 1) Создаём/обновляем заявку userId->friendId = UNCONFIRMED
-        jdbcTemplate.update(SQL_UPSERT, userId, friendId, FriendshipStatus.UNCONFIRMED.name());
+        jdbcTemplate.update(SQL_FRIENDSHIP_UPSERT, userId, friendId, FriendshipStatus.UNCONFIRMED.name());
 
         // 2) Если есть встречная заявка friendId->userId, делаем ОБЕ записи CONFIRMED
         FriendshipStatus reciprocal = getReciprocalStatus(friendId, userId);
         if (reciprocal != null) {
             jdbcTemplate.update(
-                    SQL_UPDATE_BOTH_CONFIRMED,
+                    SQL_FRIENDSHIP_UPDATE_BOTH_CONFIRMED,
                     FriendshipStatus.CONFIRMED.name(),
                     userId, friendId,
                     friendId, userId
@@ -56,13 +56,13 @@ public class FriendshipDbStorage implements FriendshipStorage {
         assertUserExists(userId);
         assertUserExists(friendId);
 
-        // Удаляем ребро userId -> friendId
-        jdbcTemplate.update(SQL_DELETE, userId, friendId);
+        // Удаляем userId -> friendId
+        jdbcTemplate.update(SQL_FRIENDSHIP_DELETE, userId, friendId);
 
-        // Если у друга было CONFIRMED по отношению к нам — понижаем до UNCONFIRMED
+        // Если у друга было CONFIRMED — понижаем до UNCONFIRMED
         FriendshipStatus reciprocal = getReciprocalStatus(friendId, userId);
         if (reciprocal == FriendshipStatus.CONFIRMED) {
-            jdbcTemplate.update(SQL_UPDATE_DEMOTE_TO_UNCONFIRMED,
+            jdbcTemplate.update(SQL_FRIENDSHIP_UPDATE_DEMOTE_TO_UNCONFIRMED,
                     FriendshipStatus.UNCONFIRMED.name(), friendId, userId);
         }
     }
@@ -70,14 +70,14 @@ public class FriendshipDbStorage implements FriendshipStorage {
     @Override
     public List<User> findFriendsOf(int userId) {
         assertUserExists(userId);
-        return jdbcTemplate.query(SQL_LIST_FRIENDS, USER_MAPPER, userId);
+        return jdbcTemplate.query(SQL_FRIENDSHIP_GET_ALL, USER_MAPPER, userId);
     }
 
     @Override
     public List<User> findCommonFriends(int userId, int otherId) {
         assertUserExists(userId);
         assertUserExists(otherId);
-        return jdbcTemplate.query(SQL_COMMON_FRIENDS, USER_MAPPER, userId, otherId);
+        return jdbcTemplate.query(SQL_FRIENDSHIP_COMMON, USER_MAPPER, userId, otherId);
     }
 
     private void assertUserExists(int id) {
@@ -89,7 +89,7 @@ public class FriendshipDbStorage implements FriendshipStorage {
 
     private FriendshipStatus getReciprocalStatus(int from, int to) {
         try {
-            String s = jdbcTemplate.queryForObject(SQL_RECIPROCAL, String.class, from, to);
+            String s = jdbcTemplate.queryForObject(SQL_FRIENDSHIP_RECIPROCAL, String.class, from, to);
             return s == null ? null : FriendshipStatus.valueOf(s);
         } catch (EmptyResultDataAccessException e) {
             return null;

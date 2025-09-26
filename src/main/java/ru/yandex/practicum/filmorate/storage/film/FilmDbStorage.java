@@ -18,7 +18,7 @@ import static ru.yandex.practicum.filmorate.storage.sql.SqlKeys.Film.*;
 public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
-    private final FilmRowMapper mapper = new FilmRowMapper();
+    private static final FilmRowMapper MAPPER = new FilmRowMapper();
 
     @Override
     @Transactional
@@ -42,7 +42,7 @@ public class FilmDbStorage implements FilmStorage {
     @Transactional
     public Film update(Film film) {
         int updated = jdbcTemplate.update(
-                SQL_UPDATE,
+                SQL_FILM_UPDATE,
                 film.getName(),
                 film.getDescription(),
                 film.getReleaseDate(),
@@ -57,28 +57,22 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Optional<Film> findById(int id) {
+    public Optional<Film> getById(int id) {
         try {
-            return Optional.ofNullable(jdbcTemplate.queryForObject(SQL_SELECT_BY_ID, mapper, id));
+            return Optional.ofNullable(jdbcTemplate.queryForObject(SQL_FILM_SELECT_BY_ID, MAPPER, id));
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
     }
 
     @Override
-    public List<Film> findAll() {
-        return jdbcTemplate.query(SQL_SELECT_ALL, mapper);
+    public List<Film> getAll() {
+        return jdbcTemplate.query(SQL_FILM_SELECT_ALL, MAPPER);
     }
 
     @Override
     @Transactional
     public boolean deleteById(int id) {
-        return jdbcTemplate.update(SQL_DELETE, id) > 0;
-    }
-
-    @Override
-    public boolean existsById(int id) {
-        Boolean exists = jdbcTemplate.queryForObject(SQL_FILM_EXISTS, Boolean.class, id);
-        return Boolean.TRUE.equals(exists);
+        return jdbcTemplate.update(SQL_FILM_DELETE, id) > 0;
     }
 }

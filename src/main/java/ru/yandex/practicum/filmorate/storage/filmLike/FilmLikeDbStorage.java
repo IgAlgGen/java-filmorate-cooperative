@@ -24,6 +24,27 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
 
     private static final FilmRowMapper FILM_MAPPER = new FilmRowMapper();
 
+    @Override
+    @Transactional
+    public void addLike(int filmId, int userId) {
+        assertFilmExists(filmId);
+        assertUserExists(userId);
+        jdbc.update(SQL_FILMLIKE_UPSERT, filmId, userId);
+    }
+
+    @Override
+    @Transactional
+    public void removeLike(int filmId, int userId) {
+        assertFilmExists(filmId);
+        assertUserExists(userId);
+        jdbc.update(SQL_FILMLIKE_DELETE, filmId, userId);
+    }
+
+    @Override
+    public List<Film> findPopular(int limit) {
+        return jdbc.query(SQL_FILMLIKE_POPULAR, FILM_MAPPER, limit);
+    }
+
     private void assertFilmExists(int filmId) {
         Boolean ok = jdbc.queryForObject(SQL_FILM_EXISTS, Boolean.class, filmId);
         if (!ok) throw new NotFoundException("Фильм не найден: id=" + filmId);
@@ -32,26 +53,5 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
     private void assertUserExists(int userId) {
         Boolean ok = jdbc.queryForObject(SQL_USER_EXISTS, Boolean.class, userId);
         if (!ok) throw new NotFoundException("Пользователь не найден: id=" + userId);
-    }
-
-    @Override
-    @Transactional
-    public void addLike(int filmId, int userId) {
-        assertFilmExists(filmId);
-        assertUserExists(userId);
-        jdbc.update(SQL_UPSERT_LIKE, filmId, userId);
-    }
-
-    @Override
-    @Transactional
-    public void removeLike(int filmId, int userId) {
-        assertFilmExists(filmId);
-        assertUserExists(userId);
-        jdbc.update(SQL_DELETE_LIKE, filmId, userId);
-    }
-
-    @Override
-    public List<Film> findPopular(int limit) {
-        return jdbc.query(SQL_POPULAR, FILM_MAPPER, limit);
     }
 }

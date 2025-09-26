@@ -49,7 +49,7 @@ public class FilmService {
 
     public Film getById(int id) {
         log.debug("Поиск фильма по ID {}", id);
-        Film film = filmStorage.findById(id).orElseThrow();
+        Film film = filmStorage.getById(id).orElseThrow();
         log.debug("Загрузка жанров для фильма с ID {}: {}", film.getId(), film.getGenres());
         Set<Genre> genreSet = genreStorage.findByFilmId(id);
         film.setGenres(genreSet);
@@ -60,7 +60,7 @@ public class FilmService {
 
     public List<Film> getAll() {
         log.debug("Поиск всех фильмов");
-        List<Film> list = filmStorage.findAll();
+        List<Film> list = filmStorage.getAll();
         for (Film film : list) {
             log.debug("Загрузка жанров для фильма с ID {}: {}", film.getId(), film.getGenres());
             Set<Genre> genreSet = genreStorage.findByFilmId(film.getId());
@@ -75,10 +75,6 @@ public class FilmService {
         log.debug("Удаление фильма с ID {}", id);
         filmStorage.deleteById(id);
         log.debug("Фильм с ID {} удален", id);
-    }
-
-    public boolean exists(int id) {
-        return filmStorage.existsById(id);
     }
 
     public void addLike(int filmId, int userId) {

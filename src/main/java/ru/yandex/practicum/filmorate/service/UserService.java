@@ -42,14 +42,14 @@ public class UserService {
 
     public User getById(int id) {
         log.debug("Поиск пользователя по ID {}", id);
-        User user = userStorage.findById(id).orElseThrow();
+        User user = userStorage.getById(id).orElseThrow();
         log.debug("Найден пользователь: id={}, login='{}'", user.getId(), user.getLogin());
         return user;
     }
 
     public List<User> getAll() {
         log.debug("Поиск всех пользователей");
-        List<User> list = userStorage.findAll();
+        List<User> list = userStorage.getAll();
         log.debug("Найдено {} пользователей", list.size());
         return list;
     }
@@ -58,11 +58,6 @@ public class UserService {
         log.debug("Удаление пользователя с ID {}", id);
         userStorage.deleteById(id);
         log.debug("Пользователь с ID {} удален", id);
-    }
-
-    public boolean exists(int id) {
-        log.debug("Проверка существования пользователя с ID {}", id);
-        return userStorage.existsById(id);
     }
 
     public void addFriend(int userId, int friendId) {

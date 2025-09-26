@@ -28,7 +28,7 @@ public class FilmDbStorageTests {
 
     @Test
     public void testFindFilmById() {
-        Optional<Film> filmOptional = filmStorage.findById(1);
+        Optional<Film> filmOptional = filmStorage.getById(1);
         assertThat(filmOptional)
                 .isPresent()
                 .hasValueSatisfying(film ->
@@ -78,13 +78,13 @@ public class FilmDbStorageTests {
 
     @Test
     public void testFindFilmByNonExistentId() {
-        Optional<Film> filmOptional = filmStorage.findById(999);
+        Optional<Film> filmOptional = filmStorage.getById(999);
         assertThat(filmOptional).isNotPresent();
     }
 
     @Test
     public void testFindAllFilms() {
-        var films = filmStorage.findAll();
+        var films = filmStorage.getAll();
         assertThat(films).isNotNull();
         assertThat(films.size()).isEqualTo(3);
     }
@@ -92,8 +92,8 @@ public class FilmDbStorageTests {
     @Test
     public void deleteFilmTest() {
         filmStorage.deleteById(3);
-        var films = filmStorage.findAll();
-        Optional<Film> deletedFilm = filmStorage.findById(3);
+        var films = filmStorage.getAll();
+        Optional<Film> deletedFilm = filmStorage.getById(3);
         assertThat(deletedFilm).isNotPresent();
         assertThat(films).isNotNull();
         assertThat(films.size()).isEqualTo(2);
