@@ -76,7 +76,6 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public boolean existsById(int id) {
-        Boolean exists = jdbcTemplate.queryForObject(SQL_USER_EXISTS, Boolean.class, id);
-        return Boolean.TRUE.equals(exists);
+        return jdbcTemplate.queryForObject(SQL_USER_EXISTS, Boolean.class, id);
     }
 }

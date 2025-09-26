@@ -74,7 +74,7 @@ public class UserService {
 
     public void removeFriend(int userId, int friendId) {
         log.debug("Пользователь с ID {} удаляет из друзей пользователя с ID {}", userId, friendId);
-        // (опционально) checkUserExistence(userId); checkUserExistence(friend
+        // (опционально) checkUserExistence(userId); checkUserExistence(friendId)
         friendshipStorage.removeFriend(userId, friendId);
         log.debug("Пользователь с ID {} удалил из друзей пользователя с ID {}", userId, friendId);
     }

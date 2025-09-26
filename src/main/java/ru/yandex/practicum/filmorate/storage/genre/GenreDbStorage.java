@@ -32,7 +32,7 @@ public class GenreDbStorage implements GenreStorage {
     @Override
     @Transactional
     public Genre create(Genre genre) {
-        jdbcTemplate.query("INSERT INTO genres (id, name) VALUES (?, ?)", mapper);
+        jdbcTemplate.update("INSERT INTO genres (id, name) VALUES (?, ?)", genre.getId(), genre.getName());
         return genre;
     }
 

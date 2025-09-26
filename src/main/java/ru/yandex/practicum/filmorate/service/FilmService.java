@@ -98,6 +98,5 @@ public class FilmService {
         List<Film> popularFilms = likeStorage.findPopular(count);
         log.debug("Найдено {} популярных фильмов", popularFilms.size());
         return popularFilms;
-
     }
 }
