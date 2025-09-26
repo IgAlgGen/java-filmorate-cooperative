@@ -8,22 +8,24 @@ import ru.yandex.practicum.filmorate.model.MpaRating;
 import java.util.List;
 import java.util.Optional;
 
+import static ru.yandex.practicum.filmorate.storage.sql.SqlKeys.Mpa.*;
+
 
 @Repository
 @RequiredArgsConstructor
 public class MpaDbStorage implements MpaStorage {
 
     private final JdbcTemplate jdbcTemplate;
-    private final MpaRowMapper mapper = new MpaRowMapper();
+    private static final MpaRowMapper MAPPER = new MpaRowMapper();
 
     @Override
     public List<MpaRating> findAll() {
-        return jdbcTemplate.query("SELECT id, name FROM mpa_ratings ORDER BY id", mapper);
+        return jdbcTemplate.query(SQL_MPA_SELECT_ALL, MAPPER);
     }
 
     @Override
     public Optional<MpaRating> findById(int id) {
-        List<MpaRating> list = jdbcTemplate.query("SELECT id, name FROM mpa_ratings WHERE id = ?", mapper, id);
+        List<MpaRating> list = jdbcTemplate.query(SQL_MPA_SELECT_BY_ID, MAPPER, id);
         return list.stream().findFirst();
     }
 }

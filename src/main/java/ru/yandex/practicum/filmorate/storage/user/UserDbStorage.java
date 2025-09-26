@@ -55,7 +55,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public Optional<User> findById(int id) {
+    public Optional<User> getById(int id) {
         try {
             return Optional.ofNullable(jdbcTemplate.queryForObject(SQL_SELECT_BY_ID, mapper, id));
         } catch (EmptyResultDataAccessException e) {
@@ -64,7 +64,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public List<User> findAll() {
+    public List<User> getAll() {
         return jdbcTemplate.query(SQL_SELECT_ALL, mapper);
     }
 
@@ -72,10 +72,5 @@ public class UserDbStorage implements UserStorage {
     @Transactional
     public boolean deleteById(int id) {
         return jdbcTemplate.update(SQL_DELETE, id) > 0;
-    }
-
-    @Override
-    public boolean existsById(int id) {
-        return jdbcTemplate.queryForObject(SQL_USER_EXISTS, Boolean.class, id);
     }
 }

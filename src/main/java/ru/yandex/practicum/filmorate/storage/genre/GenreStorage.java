@@ -12,7 +12,6 @@ public interface GenreStorage {
     Genre create(Genre genre);
     Genre update(Genre genre);
     boolean deleteById(int id);
-    boolean existsById(int id);
     void renewGenres(int filmId, Set<Genre> genres);
     Set<Genre> findByFilmId(int filmId);
 }
