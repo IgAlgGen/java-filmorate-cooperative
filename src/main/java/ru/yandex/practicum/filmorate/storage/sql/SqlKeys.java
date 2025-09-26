@@ -65,18 +65,22 @@ public final class SqlKeys {
                 SELECT status FROM friendships
                 WHERE requester_id = ? AND addressee_id = ?
                 """;
+
         public static final String SQL_FRIENDSHIP_UPSERT = """
                 MERGE INTO friendships (requester_id, addressee_id, status)
                 KEY (requester_id, addressee_id) VALUES (?, ?, ?)
                 """;
+
         public static final String SQL_FRIENDSHIP_UPDATE_BOTH_CONFIRMED = """
                 UPDATE friendships SET status = ?
                 WHERE (requester_id = ? AND addressee_id = ?) OR (requester_id = ? AND addressee_id = ?)
                 """;
+
         public static final String SQL_FRIENDSHIP_DELETE = """
                 DELETE FROM friendships
                 WHERE requester_id = ? AND addressee_id = ?
                 """;
+
         public static final String SQL_FRIENDSHIP_UPDATE_DEMOTE_TO_UNCONFIRMED = """
                 UPDATE friendships SET status = ?
                 WHERE requester_id = ? AND addressee_id = ?
@@ -160,6 +164,7 @@ public final class SqlKeys {
                 ORDER BY g.id
                 """;
     }
+
     public static final class Mpa {
         public static final String SQL_MPA_SELECT_ALL = """
                 SELECT m.id, m.name
