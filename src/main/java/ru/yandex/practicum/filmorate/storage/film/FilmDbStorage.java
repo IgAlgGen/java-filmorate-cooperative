@@ -1,55 +1,73 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.*;
 
-import static ru.yandex.practicum.filmorate.storage.sql.SqlKeys.Film.*;
-
 @Repository
 @RequiredArgsConstructor
-@org.springframework.beans.factory.annotation.Qualifier("filmDbStorage")
+@Qualifier("filmDbStorage")
 public class FilmDbStorage implements FilmStorage {
 
-    private final JdbcTemplate jdbcTemplate;
-    private final FilmRowMapper filmRowMapper = new FilmRowMapper();
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    private final FilmRowMapper filmRowMapper;
+
+    private final String P_ID = "id";
+    private final String P_NAME = "name";
+    private final String P_DESCRIPTION = "description";
+    private final String P_RELEASE_DATE = "releaseDate";
+    private final String P_DURATION = "duration";
+    private final String P_MPA = "mpa";
+
+    private static String par(String param) {
+        return ":" + param;
+    }
 
     @Override
     @Transactional
     public Film create(Film film) {
-        SimpleJdbcInsert insert = new SimpleJdbcInsert(jdbcTemplate)
-                .withTableName("films")
-                .usingGeneratedKeyColumns("id");
-        Map<String, Object> params = new HashMap<>();
-        params.put("name", film.getName());
-        params.put("description", film.getDescription());
-        params.put("release_date", film.getReleaseDate());
-        params.put("duration", film.getDuration());
-        params.put("mpa", film.getMpa() != null ? film.getMpa().getId() : 1);
-        params.put("genres", film.getGenres());
-        Number key = insert.executeAndReturnKey(params);
-        film.setId(key.intValue());
+        final String SQL_FILM_INSERT = """
+                INSERT INTO films (name, description, release_date, duration, mpa)
+                VALUES (%s, %s, %s, %s, %s)
+                """.formatted(par(P_NAME), par(P_DESCRIPTION), par(P_RELEASE_DATE), par(P_DURATION), par(P_MPA));
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue(P_NAME, film.getName())
+                .addValue(P_DESCRIPTION, film.getDescription())
+                .addValue(P_RELEASE_DATE, film.getReleaseDate())
+                .addValue(P_DURATION, film.getDuration())
+                .addValue(P_MPA, film.getMpa().getId());
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        namedParameterJdbcTemplate.update(SQL_FILM_INSERT, params, keyHolder, new String[]{P_ID});
+        Number key = keyHolder.getKey();
+        film.setId(Objects.requireNonNull(key).intValue());
         return film;
     }
 
     @Override
     @Transactional
     public Film update(Film film) {
-        int updated = jdbcTemplate.update(
-                SQL_FILM_UPDATE,
-                film.getName(),
-                film.getDescription(),
-                film.getReleaseDate(),
-                film.getDuration(),
-                film.getMpa() != null ? film.getMpa().getId() : 1,
-                film.getId()
-        );
+        final String SQL_FILM_UPDATE = """
+                UPDATE films
+                SET name = %s, description = %s, release_date = %s, duration = %s, mpa = %s
+                WHERE id = %s
+                """.formatted(par(P_NAME), par(P_DESCRIPTION), par(P_RELEASE_DATE), par(P_DURATION), par(P_MPA), par(P_ID));
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue(P_NAME, film.getName())
+                .addValue(P_DESCRIPTION, film.getDescription())
+                .addValue(P_RELEASE_DATE, film.getReleaseDate())
+                .addValue(P_DURATION, film.getDuration())
+                .addValue(P_MPA, film.getMpa().getId())
+                .addValue(P_ID, film.getId());
+        int updated = namedParameterJdbcTemplate.update(SQL_FILM_UPDATE, params);
         if (updated == 0) {
             throw new NoSuchElementException("Film not found: id=" + film.getId());
         }
@@ -58,8 +76,14 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Optional<Film> getById(int id) {
+        final String SQL_FILM_SELECT_BY_ID = """
+                SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa
+                FROM films f
+                WHERE f.id = %s
+                """.formatted(par(P_ID));
         try {
-            return Optional.ofNullable(jdbcTemplate.queryForObject(SQL_FILM_SELECT_BY_ID, filmRowMapper, id));
+            return Optional.ofNullable(namedParameterJdbcTemplate.queryForObject(SQL_FILM_SELECT_BY_ID,
+                    new MapSqlParameterSource(P_ID, id), filmRowMapper));
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
@@ -67,12 +91,20 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getAll() {
-        return jdbcTemplate.query(SQL_FILM_SELECT_ALL, filmRowMapper);
+        final String SQL_FILM_SELECT_ALL = """
+                SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa
+                FROM films f
+                ORDER BY f.id
+                """;
+        return namedParameterJdbcTemplate.query(SQL_FILM_SELECT_ALL, filmRowMapper);
     }
 
     @Override
     @Transactional
     public boolean deleteById(int id) {
-        return jdbcTemplate.update(SQL_FILM_DELETE, id) > 0;
+        final String SQL_FILM_DELETE = """
+                DELETE FROM films WHERE id = %s
+                """.formatted(par(P_ID));
+        return namedParameterJdbcTemplate.update(SQL_FILM_DELETE, new MapSqlParameterSource(P_ID, id)) > 0;
     }
 }

@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.jdbc.Sql;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserRowMapper;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -18,7 +19,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @JdbcTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@Import({UserDbStorage.class})
+@Import({UserDbStorage.class, UserRowMapper.class})
 @Sql(scripts = { "classpath:schema.sql", "classpath:testData.sql" },
         executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 class UserDbStorageTests {

@@ -5,25 +5,25 @@ public final class SqlKeys {
     }
 
     public static final class User {
-        public static final String SQL_SELECT_ALL = """
+        public static final String SQL_USER_SELECT_ALL = """
                 SELECT u.id, u.email, u.login, u.name, u.birthday
                 FROM users u
                 ORDER BY u.id
                 """;
 
-        public static final String SQL_SELECT_BY_ID = """
+        public static final String SQL_USER_SELECT_BY_ID = """
                 SELECT u.id, u.email, u.login, u.name, u.birthday
                 FROM users u
                 WHERE u.id = ?
                 """;
 
-        public static final String SQL_UPDATE = """
+        public static final String SQL_USER_UPDATE = """
                 UPDATE users
                 SET email = ?, login = ?, name = ?, birthday = ?
                 WHERE id = ?
                 """;
 
-        public static final String SQL_DELETE = """
+        public static final String SQL_USER_DELETE = """
                 DELETE FROM users WHERE id = ?
                 """;
 

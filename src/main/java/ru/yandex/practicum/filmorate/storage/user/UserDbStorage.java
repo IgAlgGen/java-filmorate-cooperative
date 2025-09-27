@@ -1,63 +1,79 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
 
-import static ru.yandex.practicum.filmorate.storage.sql.SqlKeys.User.*;
-
 @Repository
 @RequiredArgsConstructor
-@org.springframework.beans.factory.annotation.Qualifier("userDbStorage")
+@Qualifier("userDbStorage")
 public class UserDbStorage implements UserStorage {
 
-    private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    private final UserRowMapper userRowMapper;
 
-    private final UserRowMapper userRowMapper = new UserRowMapper();
+    private final String P_ID = "id";
+    private final String P_EMAIL = "email";
+    private final String P_LOGIN = "login";
+    private final String P_NAME = "name";
+    private final String P_BIRTHDAY = "birthday";
+
+    private static String par(String param) {
+        return ":" + param;
+    }
 
     @Override
     @Transactional
     public User create(User user) {
-        SimpleJdbcInsert insert = new SimpleJdbcInsert(jdbcTemplate)
-                .withTableName("users")
-                .usingGeneratedKeyColumns("id");
-        Map<String, Object> params = new HashMap<>();
-        params.put("email", user.getEmail());
-        params.put("login", user.getLogin());
-        params.put("name", user.getName());
-        params.put("birthday", user.getBirthday());
-        Number key = insert.executeAndReturnKey(params);
-        user.setId(key.intValue());
+        final String SQL_USER_INSERT = """
+                INSERT INTO users (email, login, name, birthday)
+                VALUES (%s, %s, %s, %s)
+                """.formatted(par(P_EMAIL), par(P_LOGIN), par(P_NAME), par(P_BIRTHDAY));
+        SqlParameterSource params = new BeanPropertySqlParameterSource(user);
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        namedParameterJdbcTemplate.update(SQL_USER_INSERT, params, keyHolder, new String[]{P_ID});
+        Number key = keyHolder.getKey();
+        user.setId(Objects.requireNonNull(key).intValue());
         return user;
     }
 
     @Override
     @Transactional
     public User update(User user) {
-        int updated = jdbcTemplate.update(
-                SQL_UPDATE,
-                user.getEmail(),
-                user.getLogin(),
-                user.getName(),
-                user.getBirthday(),
-                user.getId()
-        );
+        final String SQL_USER_UPDATE = """
+                UPDATE users SET email = %s, login = %s, name = %s, birthday = %s
+                WHERE id = %s
+                """.formatted(par(P_EMAIL), par(P_LOGIN), par(P_NAME), par(P_BIRTHDAY), par(P_ID));
+        SqlParameterSource params = new BeanPropertySqlParameterSource(user);
+        int updated = namedParameterJdbcTemplate.update(SQL_USER_UPDATE, params);
         if (updated == 0) {
-            throw new NoSuchElementException("User not found: id=" + user.getId());
+            throw new NotFoundException("User not found: id=" + user.getId());
         }
         return user;
     }
 
     @Override
     public Optional<User> getById(int id) {
+        final String SQL_USER_SELECT_BY_ID = """
+                SELECT u.id, u.email, u.login, u.name, u.birthday
+                FROM users u
+                WHERE u.id = %s
+                """.formatted(par(P_ID));
         try {
-            return Optional.ofNullable(jdbcTemplate.queryForObject(SQL_SELECT_BY_ID, userRowMapper, id));
+            return Optional.ofNullable(namedParameterJdbcTemplate.queryForObject(SQL_USER_SELECT_BY_ID,
+                    new MapSqlParameterSource(P_ID, id), userRowMapper));
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
@@ -65,12 +81,21 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getAll() {
-        return jdbcTemplate.query(SQL_SELECT_ALL, userRowMapper);
+        final String SQL_USER_SELECT_ALL = """
+                SELECT u.id, u.email, u.login, u.name, u.birthday
+                FROM users u
+                ORDER BY u.id
+                """;
+        return namedParameterJdbcTemplate.query(SQL_USER_SELECT_ALL, userRowMapper);
     }
 
     @Override
     @Transactional
     public boolean deleteById(int id) {
-        return jdbcTemplate.update(SQL_DELETE, id) > 0;
+        final String SQL_USER_DELETE = """
+                DELETE FROM users WHERE id = %s
+                """.formatted(par(P_ID));
+        return namedParameterJdbcTemplate.update(SQL_USER_DELETE,
+                new MapSqlParameterSource(P_ID, id)) > 0;
     }
 }

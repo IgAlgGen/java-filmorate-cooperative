@@ -7,7 +7,7 @@ import java.util.List;
 public interface FilmLikeStorage {
     void addLike(int filmId, int userId);
 
-    void removeLike(int filmId, int userId);
+    boolean removeLike(int filmId, int userId);
 
     List<Film> findPopular(int limit);
 }

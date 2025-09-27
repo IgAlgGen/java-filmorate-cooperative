@@ -7,9 +7,11 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.MpaRating;
 import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
+import ru.yandex.practicum.filmorate.storage.film.FilmRowMapper;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -19,7 +21,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @JdbcTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@Import({FilmDbStorage.class})
+@Import({FilmDbStorage.class, FilmRowMapper.class})
 @Sql(scripts = { "classpath:schema.sql", "classpath:testData.sql" },
         executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 public class FilmDbStorageTests {

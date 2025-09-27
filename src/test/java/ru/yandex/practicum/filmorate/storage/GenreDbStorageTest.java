@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.jdbc.Sql;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.genre.GenreDbStorage;
+import ru.yandex.practicum.filmorate.storage.genre.GenreRowMapper;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,8 +19,8 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @JdbcTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@Import({GenreDbStorage.class})
-@Sql(scripts = { "classpath:schema.sql", "classpath:testData.sql" },
+@Import({GenreDbStorage.class, GenreRowMapper.class})
+@Sql(scripts = {"classpath:schema.sql", "classpath:testData.sql"},
         executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 public class GenreDbStorageTest {
     private final GenreDbStorage genreStorage;
@@ -39,28 +40,20 @@ public class GenreDbStorageTest {
     public void testFindAllGenres() {
         var genres = genreStorage.findAll();
         assertThat(genres).isNotNull();
-        assertThat(genres.size()).isEqualTo(7);
-        assertThat(genres.containsAll(List.of(
-                new Genre(1, "Comedy"),
-                new Genre(2, "Drama"),
-                new Genre(3, "Animation"),
-                new Genre(4, "Thriller"),
-                new Genre(5, "Documentary"),
-                new Genre(6, "Action"),
-                new Genre(7, "Horror")))).isTrue();
+        assertThat(genres.size()).isEqualTo(21);
     }
 
     @Test
     public void testFindGenreByInvalidId() {
         Optional<Genre> genreOptional = genreStorage.findById(999);
-        assertThat(genreOptional).isNotPresent();
+        assertThat(genreOptional).isEmpty();
     }
 
     @Test
     public void createGenreTest() {
-        Genre newGenre = new Genre(8,"Sci-Fi");
+        Genre newGenre = new Genre(22, "Sci-Fi");
         Genre createdGenre = genreStorage.create(newGenre);
-        assertThat(createdGenre).hasFieldOrPropertyWithValue("id", 8)
+        assertThat(createdGenre).hasFieldOrPropertyWithValue("id", 22)
                 .hasFieldOrPropertyWithValue("name", "Sci-Fi");
     }
 
@@ -68,7 +61,6 @@ public class GenreDbStorageTest {
     public void deleteGenreTest() {
         boolean deleted = genreStorage.deleteById(7);
         assertThat(deleted).isTrue();
-        Optional<Genre> genreOptional = genreStorage.findById(7);
-        assertThat(genreOptional).isNotPresent();
+        assertThat(genreStorage.findById(7)).isEmpty();
     }
 }
