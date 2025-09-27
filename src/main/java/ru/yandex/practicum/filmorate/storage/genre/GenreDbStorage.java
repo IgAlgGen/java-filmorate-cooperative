@@ -18,16 +18,16 @@ import static ru.yandex.practicum.filmorate.storage.sql.SqlKeys.Genre.*;
 public class GenreDbStorage implements GenreStorage {
 
     private final JdbcTemplate jdbcTemplate;
-    private final GenreRowMapper MAPPER = new GenreRowMapper();
+    private final GenreRowMapper genreRowMapper = new GenreRowMapper();
 
     @Override
     public List<Genre> findAll() {
-        return jdbcTemplate.query(SQL_GENRE_SELECT_ALL, MAPPER);
+        return jdbcTemplate.query(SQL_GENRE_SELECT_ALL, genreRowMapper);
     }
 
     @Override
     public Optional<Genre> findById(int id) {
-        List<Genre> list = jdbcTemplate.query(SQL_GENRE_SELECT_BY_ID, MAPPER, id);
+        List<Genre> list = jdbcTemplate.query(SQL_GENRE_SELECT_BY_ID, genreRowMapper, id);
         return list.stream().findFirst();
     }
 
@@ -76,7 +76,7 @@ public class GenreDbStorage implements GenreStorage {
 
     @Override
     public Set<Genre> findByFilmId(int filmId) {
-        return new LinkedHashSet<>(jdbcTemplate.query(SQL_GENRE_SELECT_BY_FILM_ID, MAPPER, filmId));
+        return new LinkedHashSet<>(jdbcTemplate.query(SQL_GENRE_SELECT_BY_FILM_ID, genreRowMapper, filmId));
     }
 
 }

@@ -18,7 +18,7 @@ import static ru.yandex.practicum.filmorate.storage.sql.SqlKeys.Film.*;
 public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
-    private final FilmRowMapper MAPPER = new FilmRowMapper();
+    private final FilmRowMapper filmRowMapper = new FilmRowMapper();
 
     @Override
     @Transactional
@@ -59,7 +59,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Optional<Film> getById(int id) {
         try {
-            return Optional.ofNullable(jdbcTemplate.queryForObject(SQL_FILM_SELECT_BY_ID, MAPPER, id));
+            return Optional.ofNullable(jdbcTemplate.queryForObject(SQL_FILM_SELECT_BY_ID, filmRowMapper, id));
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
@@ -67,7 +67,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getAll() {
-        return jdbcTemplate.query(SQL_FILM_SELECT_ALL, MAPPER);
+        return jdbcTemplate.query(SQL_FILM_SELECT_ALL, filmRowMapper);
     }
 
     @Override

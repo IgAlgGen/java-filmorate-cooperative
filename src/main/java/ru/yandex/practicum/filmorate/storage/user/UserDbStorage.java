@@ -19,7 +19,7 @@ public class UserDbStorage implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
-    private final UserRowMapper mapper = new UserRowMapper();
+    private final UserRowMapper userRowMapper = new UserRowMapper();
 
     @Override
     @Transactional
@@ -57,7 +57,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public Optional<User> getById(int id) {
         try {
-            return Optional.ofNullable(jdbcTemplate.queryForObject(SQL_SELECT_BY_ID, mapper, id));
+            return Optional.ofNullable(jdbcTemplate.queryForObject(SQL_SELECT_BY_ID, userRowMapper, id));
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
@@ -65,7 +65,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getAll() {
-        return jdbcTemplate.query(SQL_SELECT_ALL, mapper);
+        return jdbcTemplate.query(SQL_SELECT_ALL, userRowMapper);
     }
 
     @Override

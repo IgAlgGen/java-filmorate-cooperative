@@ -22,7 +22,7 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
 
     private final JdbcTemplate jdbc;
 
-    private final FilmRowMapper FILM_MAPPER = new FilmRowMapper();
+    private final FilmRowMapper filmRowMapper = new FilmRowMapper();
 
     @Override
     @Transactional
@@ -42,7 +42,7 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
 
     @Override
     public List<Film> findPopular(int limit) {
-        return jdbc.query(SQL_FILMLIKE_POPULAR, FILM_MAPPER, limit);
+        return jdbc.query(SQL_FILMLIKE_POPULAR, filmRowMapper, limit);
     }
 
     private void assertFilmExists(int filmId) {

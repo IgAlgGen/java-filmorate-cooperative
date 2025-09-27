@@ -16,16 +16,16 @@ import static ru.yandex.practicum.filmorate.storage.sql.SqlKeys.Mpa.*;
 public class MpaDbStorage implements MpaStorage {
 
     private final JdbcTemplate jdbcTemplate;
-    private final MpaRowMapper MAPPER = new MpaRowMapper();
+    private final MpaRowMapper mpaRowMapper = new MpaRowMapper();
 
     @Override
     public List<MpaRating> findAll() {
-        return jdbcTemplate.query(SQL_MPA_SELECT_ALL, MAPPER);
+        return jdbcTemplate.query(SQL_MPA_SELECT_ALL, mpaRowMapper);
     }
 
     @Override
     public Optional<MpaRating> findById(int id) {
-        List<MpaRating> list = jdbcTemplate.query(SQL_MPA_SELECT_BY_ID, MAPPER, id);
+        List<MpaRating> list = jdbcTemplate.query(SQL_MPA_SELECT_BY_ID, mpaRowMapper, id);
         return list.stream().findFirst();
     }
 }

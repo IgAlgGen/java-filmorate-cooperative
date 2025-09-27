@@ -24,7 +24,7 @@ public class FriendshipDbStorage implements FriendshipStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
-    private final RowMapper<User> USER_MAPPER = new UserRowMapper();
+    private final RowMapper<User> userRowMapper = new UserRowMapper();
 
     @Override
     @Transactional
@@ -70,14 +70,14 @@ public class FriendshipDbStorage implements FriendshipStorage {
     @Override
     public List<User> findFriendsOf(int userId) {
         assertUserExists(userId);
-        return jdbcTemplate.query(SQL_FRIENDSHIP_GET_ALL, USER_MAPPER, userId);
+        return jdbcTemplate.query(SQL_FRIENDSHIP_GET_ALL, userRowMapper, userId);
     }
 
     @Override
     public List<User> findCommonFriends(int userId, int otherId) {
         assertUserExists(userId);
         assertUserExists(otherId);
-        return jdbcTemplate.query(SQL_FRIENDSHIP_COMMON, USER_MAPPER, userId, otherId);
+        return jdbcTemplate.query(SQL_FRIENDSHIP_COMMON, userRowMapper, userId, otherId);
     }
 
     private void assertUserExists(int id) {
