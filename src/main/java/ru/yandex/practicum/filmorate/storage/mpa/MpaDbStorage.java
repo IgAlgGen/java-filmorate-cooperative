@@ -16,7 +16,7 @@ import static ru.yandex.practicum.filmorate.storage.sql.SqlKeys.Mpa.*;
 public class MpaDbStorage implements MpaStorage {
 
     private final JdbcTemplate jdbcTemplate;
-    private static final MpaRowMapper MAPPER = new MpaRowMapper();
+    private final MpaRowMapper MAPPER = new MpaRowMapper();
 
     @Override
     public List<MpaRating> findAll() {

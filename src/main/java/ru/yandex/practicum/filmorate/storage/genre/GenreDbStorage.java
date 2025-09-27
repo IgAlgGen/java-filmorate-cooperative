@@ -18,7 +18,7 @@ import static ru.yandex.practicum.filmorate.storage.sql.SqlKeys.Genre.*;
 public class GenreDbStorage implements GenreStorage {
 
     private final JdbcTemplate jdbcTemplate;
-    private static final GenreRowMapper MAPPER = new GenreRowMapper();
+    private final GenreRowMapper MAPPER = new GenreRowMapper();
 
     @Override
     public List<Genre> findAll() {

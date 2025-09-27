@@ -24,7 +24,7 @@ public class FriendshipDbStorage implements FriendshipStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
-    private static final RowMapper<User> USER_MAPPER = new UserRowMapper();
+    private final RowMapper<User> USER_MAPPER = new UserRowMapper();
 
     @Override
     @Transactional

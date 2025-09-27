@@ -18,7 +18,7 @@ import static ru.yandex.practicum.filmorate.storage.sql.SqlKeys.Film.*;
 public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
-    private static final FilmRowMapper MAPPER = new FilmRowMapper();
+    private final FilmRowMapper MAPPER = new FilmRowMapper();
 
     @Override
     @Transactional

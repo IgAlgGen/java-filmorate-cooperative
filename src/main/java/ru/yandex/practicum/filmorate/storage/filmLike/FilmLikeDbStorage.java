@@ -22,7 +22,7 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
 
     private final JdbcTemplate jdbc;
 
-    private static final FilmRowMapper FILM_MAPPER = new FilmRowMapper();
+    private final FilmRowMapper FILM_MAPPER = new FilmRowMapper();
 
     @Override
     @Transactional
