@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.service;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -10,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.filmLike.FilmLikeStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.mpa.MpaDbStorage;
 
 import java.util.List;
 import java.util.Set;
@@ -28,8 +28,13 @@ public class FilmService {
     @Qualifier("genreDbStorage")
     private final GenreStorage genreStorage;
 
+    @Qualifier("mpaDbStorage")
+    private final MpaDbStorage mpaStorage;
+
     public Film create(Film f) {
         log.debug("Создание фильма: name='{}', releaseDate={}, duration={}", f.getName(), f.getReleaseDate(), f.getDuration());
+        genreStorage.assertGenresExists(f.getGenres());
+        mpaStorage.assertMpaExists(f.getMpa().getId());
         Film savedFilm = filmStorage.create(f);
         log.debug("Обновление жанров для фильма с ID {}: {}", f.getId(), f.getGenres());
         genreStorage.renewGenres(f.getId(), f.getGenres());
@@ -40,6 +45,8 @@ public class FilmService {
 
     public Film update(Film f) {
         log.debug("Обновление фильма: id={}, name='{}'", f.getId(), f.getName());
+        genreStorage.assertGenresExists(f.getGenres());
+        mpaStorage.assertMpaExists(f.getMpa().getId());
         Film updatedFilm = filmStorage.update(f);
         log.debug("Фильм обновлен: id={}, title='{}'", updatedFilm.getId(), updatedFilm.getName());
         log.debug("Обновление жанров для фильма с ID {}: {}", f.getId(), f.getGenres());

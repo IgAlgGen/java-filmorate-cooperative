@@ -28,6 +28,7 @@ public class MpaService {
             log.debug("Найден рейтинг MPA: id={}, name='{}'", mpa.getId(), mpa.getTitle());
         } else {
             log.debug("Рейтинг MPA с ID {} не найден", id);
+            throw new IllegalArgumentException("Рейтинг MPA с ID " + id + " не найден");
         }
         return mpa;
     }

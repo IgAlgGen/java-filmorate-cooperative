@@ -20,4 +20,8 @@ public interface GenreStorage {
     void renewGenres(int filmId, Set<Genre> genres);
 
     Set<Genre> findByFilmId(int filmId);
+
+    void assertGenresExists(Set<Genre> genres);
+
+    void assertGenreExists(int id);
 }

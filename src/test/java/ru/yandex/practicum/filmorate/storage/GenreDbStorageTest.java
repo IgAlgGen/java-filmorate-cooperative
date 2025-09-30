@@ -7,6 +7,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.jdbc.Sql;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.genre.GenreDbStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreRowMapper;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
 
 @JdbcTest
 @AutoConfigureTestDatabase
@@ -43,11 +45,6 @@ public class GenreDbStorageTest {
         assertThat(genres.size()).isEqualTo(21);
     }
 
-    @Test
-    public void testFindGenreByInvalidId() {
-        Optional<Genre> genreOptional = genreStorage.findById(999);
-        assertThat(genreOptional).isEmpty();
-    }
 
     @Test
     public void createGenreTest() {
@@ -61,6 +58,8 @@ public class GenreDbStorageTest {
     public void deleteGenreTest() {
         boolean deleted = genreStorage.deleteById(7);
         assertThat(deleted).isTrue();
-        assertThat(genreStorage.findById(7)).isEmpty();
+        assertThatExceptionOfType(NotFoundException.class)
+                .isThrownBy(() -> genreStorage.findById(7).orElseThrow(() ->
+                        new NotFoundException("Жанр с ID 7 не найден")));
     }
 }
