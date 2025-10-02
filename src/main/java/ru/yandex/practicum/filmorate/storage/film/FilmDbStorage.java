@@ -35,7 +35,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     @Transactional
     public Film create(Film film) {
-        final String SQL_FILM_INSERT = """
+        final String SQLFILMINSERT = """
                 INSERT INTO films (name, description, release_date, duration, mpa)
                 VALUES (%s, %s, %s, %s, %s)
                 """.formatted(par(pNAME), par(pDESCRIPTION), par(pRELEASEDATE), par(pDURATION), par(pMPA));
@@ -46,7 +46,7 @@ public class FilmDbStorage implements FilmStorage {
                 .addValue(pDURATION, film.getDuration())
                 .addValue(pMPA, film.getMpa().getId());
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        namedParameterJdbcTemplate.update(SQL_FILM_INSERT, params, keyHolder, new String[]{pID});
+        namedParameterJdbcTemplate.update(SQLFILMINSERT, params, keyHolder, new String[]{pID});
         Number key = keyHolder.getKey();
         film.setId(Objects.requireNonNull(key).intValue());
         return film;
@@ -55,7 +55,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     @Transactional
     public Film update(Film film) {
-        final String SQL_FILM_UPDATE = """
+        final String SQLFILMUPDATE = """
                 UPDATE films
                 SET name = %s, description = %s, release_date = %s, duration = %s, mpa = %s
                 WHERE id = %s
@@ -67,7 +67,7 @@ public class FilmDbStorage implements FilmStorage {
                 .addValue(pDURATION, film.getDuration())
                 .addValue(pMPA, film.getMpa().getId())
                 .addValue(pID, film.getId());
-        int updated = namedParameterJdbcTemplate.update(SQL_FILM_UPDATE, params);
+        int updated = namedParameterJdbcTemplate.update(SQLFILMUPDATE, params);
         if (updated == 0) {
             throw new NoSuchElementException("Film not found: id=" + film.getId());
         }
@@ -76,13 +76,13 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Optional<Film> getById(int id) {
-        final String SQL_FILM_SELECT_BY_ID = """
+        final String SQLFILMSELECTBYID = """
                 SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa
                 FROM films f
                 WHERE f.id = %s
                 """.formatted(par(pID));
         try {
-            return Optional.ofNullable(namedParameterJdbcTemplate.queryForObject(SQL_FILM_SELECT_BY_ID,
+            return Optional.ofNullable(namedParameterJdbcTemplate.queryForObject(SQLFILMSELECTBYID,
                     new MapSqlParameterSource(pID, id), filmRowMapper));
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
@@ -91,20 +91,20 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getAll() {
-        final String SQL_FILM_SELECT_ALL = """
+        final String SQLFILMSELECTALL = """
                 SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa
                 FROM films f
                 ORDER BY f.id
                 """;
-        return namedParameterJdbcTemplate.query(SQL_FILM_SELECT_ALL, filmRowMapper);
+        return namedParameterJdbcTemplate.query(SQLFILMSELECTALL, filmRowMapper);
     }
 
     @Override
     @Transactional
     public boolean deleteById(int id) {
-        final String SQL_FILM_DELETE = """
+        final String SQLFILMDELETE = """
                 DELETE FROM films WHERE id = %s
                 """.formatted(par(pID));
-        return namedParameterJdbcTemplate.update(SQL_FILM_DELETE, new MapSqlParameterSource(pID, id)) > 0;
+        return namedParameterJdbcTemplate.update(SQLFILMDELETE, new MapSqlParameterSource(pID, id)) > 0;
     }
 }
