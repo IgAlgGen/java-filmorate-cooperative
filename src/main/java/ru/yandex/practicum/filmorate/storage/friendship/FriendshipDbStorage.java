@@ -34,11 +34,11 @@ public class FriendshipDbStorage implements FriendshipStorage {
     @Override
     @Transactional
     public void addFriend(int userId, int friendId) {
-        final String SQL_FRIENDSHIP_UPSERT = """
+        final String SQLFRIENDSHIPUPSERT = """
                 MERGE INTO friendships (requester_id, addressee_id, status)
                 KEY (requester_id, addressee_id) VALUES (%s, %s, %s)
                 """.formatted(par(pUSERID), par(pFRIENDID), par(pSTATUS));
-        final String SQL_FRIENDSHIP_UPDATE_BOTH_CONFIRMED = """
+        final String SQLFRIENDSHIPUPDATEBOTHCONFIRMED = """
                 UPDATE friendships SET status = %s
                 WHERE (requester_id = %s AND addressee_id = %s) OR (requester_id = %s AND addressee_id = %s)
                 """.formatted(par(pSTATUS), par(pUSERID), par(pFRIENDID), par(pFRIENDID), par(pUSERID));
@@ -47,31 +47,31 @@ public class FriendshipDbStorage implements FriendshipStorage {
         }
         assertUserExists(userId);
         assertUserExists(friendId);
-        // 1) Создаём/обновляем заявку userId->friendId = UNCONFIRMED
+        //Создаём/обновляем заявку userId->friendId = UNCONFIRMED
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue(pUSERID, userId)
                 .addValue(pFRIENDID, friendId)
                 .addValue(pSTATUS, FriendshipStatus.UNCONFIRMED.name());
-        namedParameterJdbcTemplate.update(SQL_FRIENDSHIP_UPSERT, params);
-        // 2) Если есть встречная заявка friendId->userId, делаем ОБЕ записи CONFIRMED
+        namedParameterJdbcTemplate.update(SQLFRIENDSHIPUPSERT, params);
+        //Если есть встречная заявка friendId->userId, делаем ОБЕ записи CONFIRMED
         FriendshipStatus reciprocal = getReciprocalStatus(friendId, userId);
         if (reciprocal != null) {
             MapSqlParameterSource updateParams = new MapSqlParameterSource()
                     .addValue(pSTATUS, FriendshipStatus.CONFIRMED.name())
                     .addValue(pUSERID, userId)
                     .addValue(pFRIENDID, friendId);
-            namedParameterJdbcTemplate.update(SQL_FRIENDSHIP_UPDATE_BOTH_CONFIRMED, updateParams);
+            namedParameterJdbcTemplate.update(SQLFRIENDSHIPUPDATEBOTHCONFIRMED, updateParams);
         }
     }
 
     @Override
     @Transactional
     public void removeFriend(int userId, int friendId) {
-        final String SQL_FRIENDSHIP_DELETE = """
+        final String SQLFRIENDSHIPDELETE = """
                 DELETE FROM friendships
                 WHERE requester_id = %s AND addressee_id = %s
                 """.formatted(par(pUSERID), par(pFRIENDID));
-        final String SQL_FRIENDSHIP_UPDATE_DEMOTE_TO_UNCONFIRMED = """
+        final String SQLFRIENDSHIPUPDATEDEMOTETOUNCONFIRMED = """
                 UPDATE friendships SET status = %s
                 WHERE requester_id = %s AND addressee_id = %s
                 """.formatted(par(pSTATUS), par(pUSERID), par(pFRIENDID));
@@ -84,18 +84,18 @@ public class FriendshipDbStorage implements FriendshipStorage {
                 .addValue(pUSERID, userId)
                 .addValue(pFRIENDID, friendId);
         // Удаляем userId -> friendId
-        namedParameterJdbcTemplate.update(SQL_FRIENDSHIP_DELETE, params);
+        namedParameterJdbcTemplate.update(SQLFRIENDSHIPDELETE, params);
         // Если у друга было CONFIRMED — понижаем до UNCONFIRMED
         FriendshipStatus reciprocal = getReciprocalStatus(friendId, userId);
         params.addValue(pSTATUS, FriendshipStatus.UNCONFIRMED.name());
         if (reciprocal == FriendshipStatus.CONFIRMED) {
-            namedParameterJdbcTemplate.update(SQL_FRIENDSHIP_UPDATE_DEMOTE_TO_UNCONFIRMED, params);
+            namedParameterJdbcTemplate.update(SQLFRIENDSHIPUPDATEDEMOTETOUNCONFIRMED, params);
         }
     }
 
     @Override
     public List<User> findFriendsOf(int userId) {
-        final String SQL_FRIENDSHIP_GET_ALL = """
+        final String SQLFRIENDSHIPGETALL = """
                 SELECT u.id, u.email, u.login, u.name, u.birthday
                 FROM friendships f
                 JOIN users u ON u.id = f.addressee_id
@@ -104,12 +104,12 @@ public class FriendshipDbStorage implements FriendshipStorage {
                 """.formatted(par(pUSERID));
         assertUserExists(userId);
         MapSqlParameterSource params = new MapSqlParameterSource().addValue(pUSERID, userId);
-        return namedParameterJdbcTemplate.query(SQL_FRIENDSHIP_GET_ALL, params, userRowMapper);
+        return namedParameterJdbcTemplate.query(SQLFRIENDSHIPGETALL, params, userRowMapper);
     }
 
     @Override
     public List<User> findCommonFriends(int userId, int friendId) {
-        final String SQL_FRIENDSHIP_COMMON = """
+        final String SQLFRIENDSHIPCOMMON = """
                 SELECT u.id, u.email, u.login, u.name, u.birthday
                 FROM friendships f1
                 JOIN friendships f2 ON f1.addressee_id = f2.addressee_id
@@ -123,27 +123,27 @@ public class FriendshipDbStorage implements FriendshipStorage {
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue(pUSERID, userId)
                 .addValue(pFRIENDID, friendId);
-        return namedParameterJdbcTemplate.query(SQL_FRIENDSHIP_COMMON, params, userRowMapper);
+        return namedParameterJdbcTemplate.query(SQLFRIENDSHIPCOMMON, params, userRowMapper);
     }
 
     private void assertUserExists(int userId) {
-        final String SQL_USER_EXISTS = """
+        final String SQLUSEREXISTS = """
                 SELECT EXISTS(SELECT 1 FROM users WHERE id = %s)
                 """.formatted(par(pUSERID));
         MapSqlParameterSource params = new MapSqlParameterSource().addValue(pUSERID, userId);
-        Boolean ok = namedParameterJdbcTemplate.queryForObject(SQL_USER_EXISTS, params, Boolean.class);
+        Boolean ok = namedParameterJdbcTemplate.queryForObject(SQLUSEREXISTS, params, Boolean.class);
         if (Boolean.FALSE.equals(ok)) {
             throw new NotFoundException("Пользователь не найден: id=" + userId);
         }
     }
 
     private FriendshipStatus getReciprocalStatus(int friendId, int userId) {
-        final String SQL_FRIENDSHIP_RECIPROCAL = """
+        final String SQLFRIENDSHIPRECIPROCAL = """
                 SELECT status FROM friendships
                 WHERE requester_id = %s AND addressee_id = %s
                 """.formatted(par(pUSERID), par(pFRIENDID));
         try {
-            String s = namedParameterJdbcTemplate.queryForObject(SQL_FRIENDSHIP_RECIPROCAL, Map.of(pUSERID, friendId, pFRIENDID, userId), String.class);
+            String s = namedParameterJdbcTemplate.queryForObject(SQLFRIENDSHIPRECIPROCAL, Map.of(pUSERID, friendId, pFRIENDID, userId), String.class);
             return s == null ? null : FriendshipStatus.valueOf(s);
         } catch (EmptyResultDataAccessException e) {
             return null;
