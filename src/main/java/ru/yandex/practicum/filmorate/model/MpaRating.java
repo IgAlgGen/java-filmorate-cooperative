@@ -12,12 +12,12 @@ import lombok.RequiredArgsConstructor;
 public enum MpaRating {
     G(1, "G"),
     PG(2, "PG"),
-    PG_13(3, "PG_13"),
+    PG_13(3, "PG-13"),
     R(4, "R"),
-    NC_17(5, "NC_17");
+    NC_17(5, "NC-17");
 
     private final int id;
-    private final String title;
+    private final String name;
 
     public static MpaRating fromId(int id) {
         for (MpaRating rating : values()) {

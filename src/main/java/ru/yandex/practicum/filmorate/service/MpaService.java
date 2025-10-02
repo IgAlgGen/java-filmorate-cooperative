@@ -25,7 +25,7 @@ public class MpaService {
         log.debug("Поиск рейтинга MPA по ID {}", id);
         MpaRating mpa = mpaStorage.findById(id).orElse(null);
         if (mpa != null) {
-            log.debug("Найден рейтинг MPA: id={}, name='{}'", mpa.getId(), mpa.getTitle());
+            log.debug("Найден рейтинг MPA: id={}, name='{}'", mpa.getId(), mpa.getName());
         } else {
             log.debug("Рейтинг MPA с ID {} не найден", id);
             throw new IllegalArgumentException("Рейтинг MPA с ID " + id + " не найден");
