@@ -24,11 +24,11 @@ public class UserDbStorage implements UserStorage {
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final UserRowMapper userRowMapper;
 
-    private final String P_ID = "id";
-    private final String P_EMAIL = "email";
-    private final String P_LOGIN = "login";
-    private final String P_NAME = "name";
-    private final String P_BIRTHDAY = "birthday";
+    private final String pID = "id";
+    private final String pEMAIL = "email";
+    private final String pLOGIN = "login";
+    private final String pNAME = "name";
+    private final String pBIRTHDAY = "birthday";
 
     private static String par(String param) {
         return ":" + param;
@@ -40,10 +40,10 @@ public class UserDbStorage implements UserStorage {
         final String SQL_USER_INSERT = """
                 INSERT INTO users (email, login, name, birthday)
                 VALUES (%s, %s, %s, %s)
-                """.formatted(par(P_EMAIL), par(P_LOGIN), par(P_NAME), par(P_BIRTHDAY));
+                """.formatted(par(pEMAIL), par(pLOGIN), par(pNAME), par(pBIRTHDAY));
         SqlParameterSource params = new BeanPropertySqlParameterSource(user);
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        namedParameterJdbcTemplate.update(SQL_USER_INSERT, params, keyHolder, new String[]{P_ID});
+        namedParameterJdbcTemplate.update(SQL_USER_INSERT, params, keyHolder, new String[]{pID});
         Number key = keyHolder.getKey();
         user.setId(Objects.requireNonNull(key).intValue());
         return user;
@@ -55,7 +55,7 @@ public class UserDbStorage implements UserStorage {
         final String SQL_USER_UPDATE = """
                 UPDATE users SET email = %s, login = %s, name = %s, birthday = %s
                 WHERE id = %s
-                """.formatted(par(P_EMAIL), par(P_LOGIN), par(P_NAME), par(P_BIRTHDAY), par(P_ID));
+                """.formatted(par(pEMAIL), par(pLOGIN), par(pNAME), par(pBIRTHDAY), par(pID));
         SqlParameterSource params = new BeanPropertySqlParameterSource(user);
         int updated = namedParameterJdbcTemplate.update(SQL_USER_UPDATE, params);
         if (updated == 0) {
@@ -70,10 +70,10 @@ public class UserDbStorage implements UserStorage {
                 SELECT u.id, u.email, u.login, u.name, u.birthday
                 FROM users u
                 WHERE u.id = %s
-                """.formatted(par(P_ID));
+                """.formatted(par(pID));
         try {
             return Optional.ofNullable(namedParameterJdbcTemplate.queryForObject(SQL_USER_SELECT_BY_ID,
-                    new MapSqlParameterSource(P_ID, id), userRowMapper));
+                    new MapSqlParameterSource(pID, id), userRowMapper));
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
@@ -94,8 +94,8 @@ public class UserDbStorage implements UserStorage {
     public boolean deleteById(int id) {
         final String SQL_USER_DELETE = """
                 DELETE FROM users WHERE id = %s
-                """.formatted(par(P_ID));
+                """.formatted(par(pID));
         return namedParameterJdbcTemplate.update(SQL_USER_DELETE,
-                new MapSqlParameterSource(P_ID, id)) > 0;
+                new MapSqlParameterSource(pID, id)) > 0;
     }
 }

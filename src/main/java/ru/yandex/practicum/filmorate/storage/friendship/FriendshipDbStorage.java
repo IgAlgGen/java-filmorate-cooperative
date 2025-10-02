@@ -23,9 +23,9 @@ public class FriendshipDbStorage implements FriendshipStorage {
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final UserRowMapper userRowMapper;
 
-    final String P_USER_ID = "userId";
-    final String P_FRIEND_ID = "friendId";
-    final String P_STATUS = "status";
+    final String pUSERID = "userId";
+    final String pFRIENDID = "friendId";
+    final String pSTATUS = "status";
 
     private static String par(String name) {
         return ":" + name;
@@ -37,11 +37,11 @@ public class FriendshipDbStorage implements FriendshipStorage {
         final String SQL_FRIENDSHIP_UPSERT = """
                 MERGE INTO friendships (requester_id, addressee_id, status)
                 KEY (requester_id, addressee_id) VALUES (%s, %s, %s)
-                """.formatted(par(P_USER_ID), par(P_FRIEND_ID), par(P_STATUS));
+                """.formatted(par(pUSERID), par(pFRIENDID), par(pSTATUS));
         final String SQL_FRIENDSHIP_UPDATE_BOTH_CONFIRMED = """
                 UPDATE friendships SET status = %s
                 WHERE (requester_id = %s AND addressee_id = %s) OR (requester_id = %s AND addressee_id = %s)
-                """.formatted(par(P_STATUS), par(P_USER_ID), par(P_FRIEND_ID), par(P_FRIEND_ID), par(P_USER_ID));
+                """.formatted(par(pSTATUS), par(pUSERID), par(pFRIENDID), par(pFRIENDID), par(pUSERID));
         if (userId == friendId) {
             throw new IllegalArgumentException("Нельзя добавить себя в друзья.");
         }
@@ -49,17 +49,17 @@ public class FriendshipDbStorage implements FriendshipStorage {
         assertUserExists(friendId);
         // 1) Создаём/обновляем заявку userId->friendId = UNCONFIRMED
         MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue(P_USER_ID, userId)
-                .addValue(P_FRIEND_ID, friendId)
-                .addValue(P_STATUS, FriendshipStatus.UNCONFIRMED.name());
+                .addValue(pUSERID, userId)
+                .addValue(pFRIENDID, friendId)
+                .addValue(pSTATUS, FriendshipStatus.UNCONFIRMED.name());
         namedParameterJdbcTemplate.update(SQL_FRIENDSHIP_UPSERT, params);
         // 2) Если есть встречная заявка friendId->userId, делаем ОБЕ записи CONFIRMED
         FriendshipStatus reciprocal = getReciprocalStatus(friendId, userId);
         if (reciprocal != null) {
             MapSqlParameterSource updateParams = new MapSqlParameterSource()
-                    .addValue(P_STATUS, FriendshipStatus.CONFIRMED.name())
-                    .addValue(P_USER_ID, userId)
-                    .addValue(P_FRIEND_ID, friendId);
+                    .addValue(pSTATUS, FriendshipStatus.CONFIRMED.name())
+                    .addValue(pUSERID, userId)
+                    .addValue(pFRIENDID, friendId);
             namedParameterJdbcTemplate.update(SQL_FRIENDSHIP_UPDATE_BOTH_CONFIRMED, updateParams);
         }
     }
@@ -70,24 +70,24 @@ public class FriendshipDbStorage implements FriendshipStorage {
         final String SQL_FRIENDSHIP_DELETE = """
                 DELETE FROM friendships
                 WHERE requester_id = %s AND addressee_id = %s
-                """.formatted(par(P_USER_ID), par(P_FRIEND_ID));
+                """.formatted(par(pUSERID), par(pFRIENDID));
         final String SQL_FRIENDSHIP_UPDATE_DEMOTE_TO_UNCONFIRMED = """
                 UPDATE friendships SET status = %s
                 WHERE requester_id = %s AND addressee_id = %s
-                """.formatted(par(P_STATUS), par(P_USER_ID), par(P_FRIEND_ID));
+                """.formatted(par(pSTATUS), par(pUSERID), par(pFRIENDID));
         if (userId == friendId) {
             throw new IllegalArgumentException("Нельзя удалить себя из друзей.");
         }
         assertUserExists(userId);
         assertUserExists(friendId);
         MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue(P_USER_ID, userId)
-                .addValue(P_FRIEND_ID, friendId);
+                .addValue(pUSERID, userId)
+                .addValue(pFRIENDID, friendId);
         // Удаляем userId -> friendId
         namedParameterJdbcTemplate.update(SQL_FRIENDSHIP_DELETE, params);
         // Если у друга было CONFIRMED — понижаем до UNCONFIRMED
         FriendshipStatus reciprocal = getReciprocalStatus(friendId, userId);
-        params.addValue(P_STATUS, FriendshipStatus.UNCONFIRMED.name());
+        params.addValue(pSTATUS, FriendshipStatus.UNCONFIRMED.name());
         if (reciprocal == FriendshipStatus.CONFIRMED) {
             namedParameterJdbcTemplate.update(SQL_FRIENDSHIP_UPDATE_DEMOTE_TO_UNCONFIRMED, params);
         }
@@ -101,9 +101,9 @@ public class FriendshipDbStorage implements FriendshipStorage {
                 JOIN users u ON u.id = f.addressee_id
                 WHERE f.requester_id = %s AND f.status = 'CONFIRMED'
                 ORDER BY u.id
-                """.formatted(par(P_USER_ID));
+                """.formatted(par(pUSERID));
         assertUserExists(userId);
-        MapSqlParameterSource params = new MapSqlParameterSource().addValue(P_USER_ID, userId);
+        MapSqlParameterSource params = new MapSqlParameterSource().addValue(pUSERID, userId);
         return namedParameterJdbcTemplate.query(SQL_FRIENDSHIP_GET_ALL, params, userRowMapper);
     }
 
@@ -117,20 +117,20 @@ public class FriendshipDbStorage implements FriendshipStorage {
                 JOIN users u ON u.id = f1.addressee_id
                 WHERE f1.requester_id = %s AND f2.requester_id = %s
                 ORDER BY u.id
-                """.formatted(par(P_USER_ID), par(P_FRIEND_ID));
+                """.formatted(par(pUSERID), par(pFRIENDID));
         assertUserExists(userId);
         assertUserExists(friendId);
         MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue(P_USER_ID, userId)
-                .addValue(P_FRIEND_ID, friendId);
+                .addValue(pUSERID, userId)
+                .addValue(pFRIENDID, friendId);
         return namedParameterJdbcTemplate.query(SQL_FRIENDSHIP_COMMON, params, userRowMapper);
     }
 
     private void assertUserExists(int userId) {
         final String SQL_USER_EXISTS = """
                 SELECT EXISTS(SELECT 1 FROM users WHERE id = %s)
-                """.formatted(par(P_USER_ID));
-        MapSqlParameterSource params = new MapSqlParameterSource().addValue(P_USER_ID, userId);
+                """.formatted(par(pUSERID));
+        MapSqlParameterSource params = new MapSqlParameterSource().addValue(pUSERID, userId);
         Boolean ok = namedParameterJdbcTemplate.queryForObject(SQL_USER_EXISTS, params, Boolean.class);
         if (Boolean.FALSE.equals(ok)) {
             throw new NotFoundException("Пользователь не найден: id=" + userId);
@@ -141,9 +141,9 @@ public class FriendshipDbStorage implements FriendshipStorage {
         final String SQL_FRIENDSHIP_RECIPROCAL = """
                 SELECT status FROM friendships
                 WHERE requester_id = %s AND addressee_id = %s
-                """.formatted(par(P_USER_ID), par(P_FRIEND_ID));
+                """.formatted(par(pUSERID), par(pFRIENDID));
         try {
-            String s = namedParameterJdbcTemplate.queryForObject(SQL_FRIENDSHIP_RECIPROCAL, Map.of(P_USER_ID, friendId, P_FRIEND_ID, userId), String.class);
+            String s = namedParameterJdbcTemplate.queryForObject(SQL_FRIENDSHIP_RECIPROCAL, Map.of(pUSERID, friendId, pFRIENDID, userId), String.class);
             return s == null ? null : FriendshipStatus.valueOf(s);
         } catch (EmptyResultDataAccessException e) {
             return null;

@@ -21,8 +21,8 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final FilmRowMapper filmRowMapper;
 
-    private final String P_FILM_ID = "filmId";
-    private final String P_USER_ID = "userId";
+    private final String pFILMID = "filmId";
+    private final String pUSERID = "userId";
 
     private static String par(String name) {
         return ":" + name;
@@ -33,12 +33,12 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
     public void addLike(int filmId, int userId) {
         final String SQL_FILMLIKE_UPSERT = """
                 MERGE INTO film_likes (film_id, user_id) KEY (film_id, user_id) VALUES (%s, %s)
-                """.formatted(par(P_FILM_ID), par(P_USER_ID));
+                """.formatted(par(pFILMID), par(pUSERID));
         assertFilmExists(filmId);
         assertUserExists(userId);
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource()
-                .addValue(P_FILM_ID, filmId)
-                .addValue(P_USER_ID, userId);
+                .addValue(pFILMID, filmId)
+                .addValue(pUSERID, userId);
         namedParameterJdbcTemplate.update(SQL_FILMLIKE_UPSERT, mapSqlParameterSource);
     }
 
@@ -47,12 +47,12 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
     public boolean removeLike(int filmId, int userId) {
         final String SQL_FILMLIKE_DELETE = """
                 DELETE FROM film_likes WHERE film_id = %s AND user_id = %s
-                """.formatted(par(P_FILM_ID), par(P_USER_ID));
+                """.formatted(par(pFILMID), par(pUSERID));
         assertFilmExists(filmId);
         assertUserExists(userId);
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource()
-                .addValue(P_FILM_ID, filmId)
-                .addValue(P_USER_ID, userId);
+                .addValue(pFILMID, filmId)
+                .addValue(pUSERID, userId);
         return namedParameterJdbcTemplate.update(SQL_FILMLIKE_DELETE, mapSqlParameterSource) > 0;
     }
 
@@ -75,9 +75,9 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
     private void assertFilmExists(int filmId) {
         final String SQL_FILM_EXISTS = """
                 SELECT EXISTS(SELECT 1 FROM films WHERE id = %s)
-                """.formatted(par(P_FILM_ID));
+                """.formatted(par(pFILMID));
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource()
-                .addValue(P_FILM_ID, filmId);
+                .addValue(pFILMID, filmId);
         Boolean ok = namedParameterJdbcTemplate.queryForObject(SQL_FILM_EXISTS, mapSqlParameterSource, Boolean.class);
         if (Boolean.FALSE.equals(ok)) throw new NotFoundException("Фильм не найден: id=" + filmId);
     }
@@ -85,9 +85,9 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
     private void assertUserExists(int userId) {
         final String SQL_USER_EXISTS = """
                 SELECT EXISTS(SELECT 1 FROM users WHERE id = %s)
-                """.formatted(par(P_USER_ID));
+                """.formatted(par(pUSERID));
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource()
-                .addValue(P_USER_ID, userId);
+                .addValue(pUSERID, userId);
         Boolean ok = namedParameterJdbcTemplate.queryForObject(SQL_USER_EXISTS,
                 mapSqlParameterSource, Boolean.class);
         if (Boolean.FALSE.equals(ok)) throw new NotFoundException("Пользователь не найден: id=" + userId);
