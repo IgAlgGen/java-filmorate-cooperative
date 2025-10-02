@@ -31,7 +31,7 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
     @Override
     @Transactional
     public void addLike(int filmId, int userId) {
-        final String SQLFILMLIKEUPSERT = """
+        final String sqlFilmlikeUpsert = """
                 MERGE INTO film_likes (film_id, user_id) KEY (film_id, user_id) VALUES (%s, %s)
                 """.formatted(par(pFILMID), par(pUSERID));
         assertFilmExists(filmId);
@@ -39,13 +39,13 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource()
                 .addValue(pFILMID, filmId)
                 .addValue(pUSERID, userId);
-        namedParameterJdbcTemplate.update(SQLFILMLIKEUPSERT, mapSqlParameterSource);
+        namedParameterJdbcTemplate.update(sqlFilmlikeUpsert, mapSqlParameterSource);
     }
 
     @Override
     @Transactional
     public boolean removeLike(int filmId, int userId) {
-        final String SQLFILMLIKEDELETE = """
+        final String sqlFilmlikeDelete = """
                 DELETE FROM film_likes WHERE film_id = %s AND user_id = %s
                 """.formatted(par(pFILMID), par(pUSERID));
         assertFilmExists(filmId);
@@ -53,12 +53,12 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource()
                 .addValue(pFILMID, filmId)
                 .addValue(pUSERID, userId);
-        return namedParameterJdbcTemplate.update(SQLFILMLIKEDELETE, mapSqlParameterSource) > 0;
+        return namedParameterJdbcTemplate.update(sqlFilmlikeDelete, mapSqlParameterSource) > 0;
     }
 
     @Override
     public List<Film> findPopular(int limit) {
-        final String SQLFILMLIKEPOPULAR = """
+        final String sqlFilmlikePopular = """
                 SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa
                 FROM films f
                 LEFT JOIN film_likes fl ON fl.film_id = f.id
@@ -69,26 +69,26 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
         if (limit <= 0) return Collections.emptyList();
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource()
                 .addValue("limit", limit);
-        return namedParameterJdbcTemplate.query(SQLFILMLIKEPOPULAR, mapSqlParameterSource, filmRowMapper);
+        return namedParameterJdbcTemplate.query(sqlFilmlikePopular, mapSqlParameterSource, filmRowMapper);
     }
 
     private void assertFilmExists(int filmId) {
-        final String SQLFILMEXISTS = """
+        final String sqlFilmExists = """
                 SELECT EXISTS(SELECT 1 FROM films WHERE id = %s)
                 """.formatted(par(pFILMID));
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource()
                 .addValue(pFILMID, filmId);
-        Boolean ok = namedParameterJdbcTemplate.queryForObject(SQLFILMEXISTS, mapSqlParameterSource, Boolean.class);
+        Boolean ok = namedParameterJdbcTemplate.queryForObject(sqlFilmExists, mapSqlParameterSource, Boolean.class);
         if (Boolean.FALSE.equals(ok)) throw new NotFoundException("Фильм не найден: id=" + filmId);
     }
 
     private void assertUserExists(int userId) {
-        final String SQLUSEREXISTS = """
+        final String sqlUserExists = """
                 SELECT EXISTS(SELECT 1 FROM users WHERE id = %s)
                 """.formatted(par(pUSERID));
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource()
                 .addValue(pUSERID, userId);
-        Boolean ok = namedParameterJdbcTemplate.queryForObject(SQLUSEREXISTS,
+        Boolean ok = namedParameterJdbcTemplate.queryForObject(sqlUserExists,
                 mapSqlParameterSource, Boolean.class);
         if (Boolean.FALSE.equals(ok)) throw new NotFoundException("Пользователь не найден: id=" + userId);
     }
