@@ -4,6 +4,8 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 
 @Getter
@@ -23,4 +25,6 @@ public class User implements Identifiable {
     private String email;
     @Past(message = "Дата рождения не может быть в будущем")
     private LocalDate birthday;
+    @Setter
+    private Set<Integer> friends = new HashSet<>();
 }

@@ -99,9 +99,9 @@ public class FriendshipDbStorage implements FriendshipStorage {
                 SELECT u.id, u.email, u.login, u.name, u.birthday
                 FROM friendships f
                 JOIN users u ON u.id = f.addressee_id
-                WHERE f.requester_id = %s AND f.status = 'CONFIRMED'
+                WHERE f.requester_id = %s
                 ORDER BY u.id
-                """.formatted(par(pUSERID));
+                """.formatted(par(pUSERID)); // AND f.status = 'CONFIRMED'
         assertUserExists(userId);
         MapSqlParameterSource params = new MapSqlParameterSource().addValue(pUSERID, userId);
         return namedParameterJdbcTemplate.query(sqlFriendshipGetAll, params, userRowMapper);
@@ -113,11 +113,10 @@ public class FriendshipDbStorage implements FriendshipStorage {
                 SELECT u.id, u.email, u.login, u.name, u.birthday
                 FROM friendships f1
                 JOIN friendships f2 ON f1.addressee_id = f2.addressee_id
-                    AND f1.status = 'CONFIRMED' AND f2.status = 'CONFIRMED'
                 JOIN users u ON u.id = f1.addressee_id
                 WHERE f1.requester_id = %s AND f2.requester_id = %s
                 ORDER BY u.id
-                """.formatted(par(pUSERID), par(pFRIENDID));
+                """.formatted(par(pUSERID), par(pFRIENDID)); //AND f1.status = 'CONFIRMED' AND f2.status = 'CONFIRMED'
         assertUserExists(userId);
         assertUserExists(friendId);
         MapSqlParameterSource params = new MapSqlParameterSource()
