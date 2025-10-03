@@ -37,10 +37,10 @@ public class FilmService {
         mpaStorage.assertMpaExists(f.getMpa().getId());
         Film savedFilm = filmStorage.create(f);
         log.debug("Обновление жанров для фильма с ID {}: {}", f.getId(), f.getGenres());
-        genreStorage.renewGenres(f.getId(), f.getGenres());
+        genreStorage.renewGenres(savedFilm.getId(), f.getGenres());
         log.debug("Жанры для фильма с ID {} обновлены: {}", f.getId(), f.getGenres());
         log.debug("Фильм создан: id={}, title='{}'", savedFilm.getId(), savedFilm.getName());
-        return savedFilm;
+        return getById(savedFilm.getId());
     }
 
     public Film update(Film f) {

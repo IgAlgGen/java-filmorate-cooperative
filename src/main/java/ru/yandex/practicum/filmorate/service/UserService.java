@@ -62,7 +62,6 @@ public class UserService {
 
     public void addFriend(int userId, int friendId) {
         log.debug("Пользователь с ID {} добавляет в друзья пользователя с ID {}", userId, friendId);
-        // (опционально) checkUserExistence(userId); checkUserExistence(friendId);
         friendshipStorage.addFriend(userId, friendId);
         log.debug("Пользователь с ID {} добавил в друзья пользователя с ID {}", userId, friendId);
     }

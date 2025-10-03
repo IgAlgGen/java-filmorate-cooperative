@@ -108,13 +108,14 @@ public class GenreDbStorage implements GenreStorage {
         // добавить новые связи
         if (genres == null || genres.isEmpty()) return;
         // убрать возможные дубли по id
-        Set<Integer> ids = genres.stream().map(Genre::getId).collect(toSet());
-        SqlParameterSource[] batch =
-                ids.stream()
-                        .map(genreId -> new MapSqlParameterSource()
-                                .addValue(pFILMID, filmId)
-                                .addValue(pGENREID, genreId))
-                        .toArray(SqlParameterSource[]::new);
+        List<Integer> ids = genres.stream()
+                .map(Genre::getId)
+                .filter(Objects::nonNull)
+                .sorted()
+                .toList();
+        SqlParameterSource[] batch = ids.stream()
+                .map(gid -> new MapSqlParameterSource().addValue(pFILMID, filmId).addValue(pGENREID, gid))
+                .toArray(SqlParameterSource[]::new);
         namedParameterJdbcTemplate.batchUpdate(sqlGenreInsertByFilmId, batch);
     }
 
