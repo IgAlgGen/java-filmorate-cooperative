@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserRowMapper;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -41,7 +42,7 @@ class UserDbStorageTests {
 
     @Test
     public void testCreateUser() {
-        User newUser = new User(0, "newuser", "New User", "newUSer@example.com", LocalDate.of(1995, 5, 15));
+        User newUser = new User(0, "newuser", "New User", "newUSer@example.com", LocalDate.of(1995, 5, 15), new HashSet<>());
         User createdUser = userStorage.create(newUser);
         User retrievedUser = userStorage.getById(createdUser.getId()).orElseThrow();
         assertThat(retrievedUser).isEqualTo(createdUser);
