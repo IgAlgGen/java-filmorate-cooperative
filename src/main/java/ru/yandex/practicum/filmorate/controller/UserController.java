@@ -25,11 +25,11 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<User> create(@Valid @RequestBody User user) {
+        log.info("Добавление пользователя: {}", user.toString());
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
         User created = userService.create(user);
-        log.info("Пользователь добавлен: {}", created.toString());
         URI location = URI.create("/users/" + created.getId());
         return ResponseEntity.created(location).body(created);
     }
@@ -37,8 +37,7 @@ public class UserController {
     @PutMapping
     public ResponseEntity<User> update(@Valid @RequestBody User user) {
         log.info("Обновление пользователя с ID {}: {}", user.getId(), user.toString());
-        User updated = userService.update(user.getId(), user);
-        log.info("Пользователь с ID {} обновлен: {}", user.getId(), updated);
+        User updated = userService.update(user);
         return ResponseEntity.ok(updated);
     }
 
@@ -51,7 +50,15 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<User> getById(@PathVariable @Positive int id) {
+        log.info("Получение пользователя с ID {}", id);
         return ResponseEntity.ok(userService.getById(id));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable @Positive int id) {
+        log.info("Удаление пользователя с ID {}", id);
+        userService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -59,8 +66,8 @@ public class UserController {
      */
     @PutMapping("/{id}/friends/{friendId}")
     public ResponseEntity<Void> addFriend(@PathVariable @Positive int id, @PathVariable @Positive int friendId) {
-        userService.addFriend(id, friendId);
         log.info("Пользователь с ID {} добавляет в друзья пользователя с ID {}", id, friendId);
+        userService.addFriend(id, friendId);
         return ResponseEntity.ok().build();
     }
 
@@ -69,8 +76,8 @@ public class UserController {
      */
     @DeleteMapping("/{id}/friends/{friendId}")
     public ResponseEntity<Void> removeFriend(@PathVariable @Positive int id, @PathVariable @Positive int friendId) {
-        userService.removeFriend(id, friendId);
         log.info("Пользователь с ID {} удаляет из друзей пользователя с ID {}", id, friendId);
+        userService.removeFriend(id, friendId);
         return ResponseEntity.ok().build();
     }
 

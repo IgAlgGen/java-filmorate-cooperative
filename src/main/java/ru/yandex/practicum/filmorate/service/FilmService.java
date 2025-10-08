@@ -1,69 +1,106 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exeptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.InMemoryStorage;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.filmLike.FilmLikeStorage;
+import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.mpa.MpaDbStorage;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FilmService {
 
-    private final InMemoryStorage<Film> filmStorage;
-    private final InMemoryStorage<User> userStorage;
+    @Qualifier("filmDbStorage")
+    private final FilmStorage filmStorage;
+
+    @Qualifier("filmLikeDbStorage")
+    private final FilmLikeStorage likeStorage;
+
+    @Qualifier("genreDbStorage")
+    private final GenreStorage genreStorage;
+
+    @Qualifier("mpaDbStorage")
+    private final MpaDbStorage mpaStorage;
+
+    public Film create(Film f) {
+        log.debug("Создание фильма: name='{}', releaseDate={}, duration={}", f.getName(), f.getReleaseDate(), f.getDuration());
+        genreStorage.assertGenresExists(f.getGenres());
+        mpaStorage.assertMpaExists(f.getMpa().getId());
+        Film savedFilm = filmStorage.create(f);
+        log.debug("Обновление жанров для фильма с ID {}: {}", f.getId(), f.getGenres());
+        genreStorage.renewGenres(savedFilm.getId(), f.getGenres());
+        log.debug("Жанры для фильма с ID {} обновлены: {}", f.getId(), f.getGenres());
+        log.debug("Фильм создан: id={}, title='{}'", savedFilm.getId(), savedFilm.getName());
+        return getById(savedFilm.getId());
+    }
+
+    public Film update(Film f) {
+        log.debug("Обновление фильма: id={}, name='{}'", f.getId(), f.getName());
+        genreStorage.assertGenresExists(f.getGenres());
+        mpaStorage.assertMpaExists(f.getMpa().getId());
+        Film updatedFilm = filmStorage.update(f);
+        log.debug("Фильм обновлен: id={}, title='{}'", updatedFilm.getId(), updatedFilm.getName());
+        log.debug("Обновление жанров для фильма с ID {}: {}", f.getId(), f.getGenres());
+        genreStorage.renewGenres(f.getId(), f.getGenres());
+        log.debug("Жанры для фильма с ID {} обновлены: {}", f.getId(), f.getGenres());
+        return updatedFilm;
+    }
 
     public Film getById(int id) {
-        return filmStorage.findById(id).orElseThrow(() ->
-                new NotFoundException(String.format("Фильм с id=%d не найден", id)));
+        log.debug("Поиск фильма по ID {}", id);
+        Film film = filmStorage.getById(id).orElseThrow();
+        log.debug("Загрузка жанров для фильма с ID {}: {}", film.getId(), film.getGenres());
+        Set<Genre> genreSet = genreStorage.findByFilmId(id);
+        film.setGenres(genreSet);
+        log.debug("Жанры для фильма с ID {} загружены: {}", film.getId(), film.getGenres());
+        log.debug("Найден фильм: id={}, title='{}'", film.getId(), film.getName());
+        return film;
     }
 
     public List<Film> getAll() {
-        return filmStorage.findAll();
+        log.debug("Поиск всех фильмов");
+        List<Film> list = filmStorage.getAll();
+        for (Film film : list) {
+            log.debug("Загрузка жанров для фильма с ID {}: {}", film.getId(), film.getGenres());
+            Set<Genre> genreSet = genreStorage.findByFilmId(film.getId());
+            film.setGenres(genreSet);
+            log.debug("Жанры для фильма с ID {} загружены: {}", film.getId(), film.getGenres());
+        }
+        log.debug("Найдено {} фильмов", list.size());
+        return list;
     }
 
-    public Film create(Film film) {
-        return filmStorage.create(film);
+    public void delete(int id) {
+        log.debug("Удаление фильма с ID {}", id);
+        filmStorage.deleteById(id);
+        log.debug("Фильм с ID {} удален", id);
     }
-
-    public Film update(int id, Film film) {
-        return filmStorage.update(id, film).orElseThrow(() ->
-                new NotFoundException(String.format("Фильм с id=%d не найден", id)));
-    }
-
 
     public void addLike(int filmId, int userId) {
-        Film film = getById(filmId);
-        checkUserExistence(userId);
-        film.addLike(userId);
+        log.debug("Пользователь с ID {} ставит лайк фильму с ID {}", userId, filmId);
+        likeStorage.addLike((int) filmId, (int) userId);
+        log.debug("Пользователь с ID {} поставил лайк фильму с ID {}", userId, filmId);
     }
 
     public void removeLike(int filmId, int userId) {
-        Film film = getById(filmId);
-        checkUserExistence(userId);
-        film.removeLike(userId);
-    }
-
-    /**
-     * Проверяет, существует ли пользователь с данным ID.<br>
-     *
-     * @param userId идентификатор пользователя
-     * @exception NotFoundException если пользователь не найден
-     */
-    private void checkUserExistence(int userId) {
-        userStorage.findById(userId).orElseThrow(() ->
-                new NotFoundException(String.format("Пользователь с id=%d не найден", userId)));
+        log.debug("Пользователь с ID {} удаляет лайк у фильма с ID {}", userId, filmId);
+        likeStorage.removeLike(filmId, userId);
+        log.debug("Пользователь с ID {} удалил лайк у фильма с ID {}", userId, filmId);
     }
 
     public List<Film> getPopular(int count) {
-        return filmStorage.findAll().stream()
-                .sorted(Comparator.comparingInt(Film::likeCount).reversed())
-                .limit(count)
-                .collect(Collectors.toList());
+        log.debug("Получение списка из {} популярных фильмов", count);
+        List<Film> popularFilms = likeStorage.findPopular(count);
+        log.debug("Найдено {} популярных фильмов", popularFilms.size());
+        return popularFilms;
     }
 }

@@ -1,13 +1,10 @@
 package ru.yandex.practicum.filmorate.model;
 
+import jakarta.validation.constraints.*;
 import lombok.*;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import ru.yandex.practicum.filmorate.service.validators.constraints.ReleaseDateMin;
@@ -23,6 +20,8 @@ import ru.yandex.practicum.filmorate.service.validators.constraints.ReleaseDateM
 @EqualsAndHashCode
 public class Film implements Identifiable {
     private int id;
+    @NotNull
+    @NotEmpty
     @NotBlank(message = "Название фильма не может быть пустым.")
     private String name;
     @NotNull
@@ -32,20 +31,7 @@ public class Film implements Identifiable {
     private String description;
     @Positive(message = "Продолжительность фильма должна быть положительным числом.")
     private int duration;
-    private Set<Integer> likes = new HashSet<>();
-    private Set<Genre> genres = new HashSet<>();
     @NotNull
     private MpaRating mpa;
-
-    public void addLike(int userId) {
-        likes.add(userId);
-    }
-
-    public void removeLike(int userId) {
-        likes.remove(userId);
-    }
-
-    public int likeCount() {
-        return likes.size();
-    }
+    private Set<Genre> genres = new LinkedHashSet<>();
 }

@@ -26,7 +26,6 @@ public class FilmController {
     public ResponseEntity<Film> create(@Valid @RequestBody Film film) {
         log.info("Добавление фильма: {}", film.toString());
         Film created = filmService.create(film);
-        log.info("Фильм добавлен: {}", created.toString());
         URI location = URI.create("/films/" + created.getId());
         return ResponseEntity.created(location).body(created);
     }
@@ -34,11 +33,7 @@ public class FilmController {
     @PutMapping
     public ResponseEntity<Film> update(@Valid @RequestBody(required = false) Film film) {
         log.info("Обновление фильма с ID {}: {}", film.getId(), film.toString());
-        if (film == null) {
-            log.error("Пустой JSON в запросе обновления фильма");
-            return ResponseEntity.status(500).build(); // возвращаем 500 Internal Server Error
-        }
-        Film updated = filmService.update(film.getId(), film);
+        Film updated = filmService.update(film);
         log.info("Фильм с ID {} обновлен: {}", film.getId(), updated);
         return ResponseEntity.ok(updated);
     }
@@ -46,12 +41,21 @@ public class FilmController {
     @GetMapping
     public ResponseEntity<List<Film>> getAll() {
         log.info("Получение списка всех фильмов");
-        return ResponseEntity.ok(filmService.getAll());
+        List<Film> films = filmService.getAll();
+        return ResponseEntity.ok(films);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Film> getById(@PathVariable int id) {
+        log.info("Получение фильма с ID {}", id);
         return ResponseEntity.ok(filmService.getById(id));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable @Positive int id) {
+        log.info("Удаление фильма с ID {}", id);
+        filmService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -59,8 +63,8 @@ public class FilmController {
      */
     @PutMapping("/{id}/like/{userId}")
     public ResponseEntity<Void> addLike(@PathVariable @Positive int id, @PathVariable @Positive int userId) {
-        filmService.addLike(id, userId);
         log.info("Пользователь с ID {} ставит лайк фильму с ID {}", userId, id);
+        filmService.addLike(id, userId);
         return ResponseEntity.ok().build();
     }
 
@@ -69,8 +73,8 @@ public class FilmController {
      */
     @DeleteMapping("/{id}/like/{userId}")
     public ResponseEntity<Void> removeLike(@PathVariable @Positive int id, @PathVariable @Positive int userId) {
-        filmService.removeLike(id, userId);
         log.info("Пользователь с ID {} удаляет лайк к фильму с ID {}", userId, id);
+        filmService.removeLike(id, userId);
         return ResponseEntity.ok().build();
     }
 

@@ -4,8 +4,8 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 
 @Getter
@@ -25,15 +25,6 @@ public class User implements Identifiable {
     private String email;
     @Past(message = "Дата рождения не может быть в будущем")
     private LocalDate birthday;
-    private Map<Integer, FriendshipStatus> friends = new HashMap<>();
-
-    public void requestFriendship(int otherUserId) {
-        friends.put(otherUserId, FriendshipStatus.UNCONFIRMED);
-    }
-    public void confirmFriendship(int otherUserId) {
-        friends.put(otherUserId, FriendshipStatus.CONFIRMED);
-    }
-    public void removeFriendship(int otherUserId) {
-        friends.remove(otherUserId);
-    }
+    @Setter
+    private Set<Integer> friends = new HashSet<>();
 }
