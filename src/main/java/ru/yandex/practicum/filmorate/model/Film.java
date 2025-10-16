@@ -34,4 +34,5 @@ public class Film implements Identifiable {
     @NotNull
     private MpaRating mpa;
     private Set<Genre> genres = new LinkedHashSet<>();
+    private Set<Director> directors = new LinkedHashSet<>();
 }
