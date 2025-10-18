@@ -19,8 +19,9 @@ import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
+@Qualifier("directorDbStorage")
 public class DirectorDbStorage implements DirectorStorage {
-    @Qualifier("namedParameterJdbcTemplate")
+
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final DirectorRowMapper directorRowMapper;
 
