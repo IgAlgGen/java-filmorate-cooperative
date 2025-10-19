@@ -9,5 +9,5 @@ public interface FilmLikeStorage {
 
     boolean removeLike(int filmId, int userId);
 
-    List<Film> findPopular(int limit);
+    List<Film> findPopular(int limit, Long genreId, Integer year);
 }

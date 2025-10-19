@@ -97,10 +97,14 @@ public class FilmService {
         log.debug("Пользователь с ID {} удалил лайк у фильма с ID {}", userId, filmId);
     }
 
-    public List<Film> getPopular(int count) {
-        log.debug("Получение списка из {} популярных фильмов", count);
-        List<Film> popularFilms = likeStorage.findPopular(count);
+    public List<Film> getPopular(int count, Long genreId, Integer year) {
+        log.debug("Получение популярных фильмов: count={}, genreId={}, year={}", count, genreId, year);
+        List<Film> popularFilms = likeStorage.findPopular(count, genreId, year);
         log.debug("Найдено {} популярных фильмов", popularFilms.size());
+        for (Film film : popularFilms) {
+            film.setGenres(genreStorage.findByFilmId(film.getId()));
+        }
+        log.debug("Возвращено {} популярных фильмов", popularFilms.size());
         return popularFilms;
     }
 }
