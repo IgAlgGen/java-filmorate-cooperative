@@ -132,8 +132,8 @@ public class UserService {
         // для всех пользователей в filmRecommendationDataMap рассчитываем схожесть по лайкам
         // сортируем их по этой схожести
         // берем первого
-        Set<Integer> mostSimilarUserLikedFilms = filmRecommendationDataMap.values().stream().
-                peek(recData -> recData.computeSimilarityScore(targetUserLikedFilms))
+        Set<Integer> mostSimilarUserLikedFilms = filmRecommendationDataMap.values().stream()
+                .peek(recData -> recData.computeSimilarityScore(targetUserLikedFilms))
                 .max(Comparator.comparing(FilmRecommendationData::getSimilarityScore))
                 .map(FilmRecommendationData::getLikedFilmIds)
                 .orElse(Collections.emptySet());
