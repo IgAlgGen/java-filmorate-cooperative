@@ -107,6 +107,7 @@ public class FilmService {
     public List<Film> getCommonFilms(int userId, int friendId) {
         log.debug("Получение общих фильмов для {} и {}", userId, friendId);
         List<Film> commonFilms = filmStorage.getCommonFilmsSortedByPopularity(userId, friendId);
+
         for (Film film : commonFilms) {
             log.debug("Загрузка жанров для фильма с ID {}: {}", film.getId(), film.getGenres());
             Set<Genre> genreSet = genreStorage.findByFilmId(film.getId());
