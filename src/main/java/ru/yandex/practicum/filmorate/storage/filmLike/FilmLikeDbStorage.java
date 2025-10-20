@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmRowMapper;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
