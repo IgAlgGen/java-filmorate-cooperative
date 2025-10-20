@@ -103,4 +103,11 @@ public class FilmService {
         log.debug("Найдено {} популярных фильмов", popularFilms.size());
         return popularFilms;
     }
+
+    public List<Film> getCommonFilms(int userId, int friendId) {
+        log.debug("Получение общих фильмов для {} и {}", userId, friendId);
+        List<Film> commonFilms = filmStorage.getCommonFilmsSortedByPopularity(userId, friendId);
+        log.debug("Найдено {} общих фильмов", commonFilms.size());
+        return commonFilms;
+    }
 }

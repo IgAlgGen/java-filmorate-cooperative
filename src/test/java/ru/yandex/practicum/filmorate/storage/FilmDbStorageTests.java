@@ -99,4 +99,16 @@ public class FilmDbStorageTests {
         assertThat(films).isNotNull();
         assertThat(films.size()).isEqualTo(2);
     }
+
+    @Test
+    public void testGetCommonFilmsSortedByPopularity() {
+        var commonFilms = filmStorage.getCommonFilmsSortedByPopularity(1, 2);
+
+        assertThat(commonFilms)
+                .isNotNull();
+
+        assertThat(commonFilms.get(0).getName()).isEqualTo("Film2");
+        assertThat(commonFilms.get(1).getName()).isEqualTo("Film1");
+    }
+
 }
