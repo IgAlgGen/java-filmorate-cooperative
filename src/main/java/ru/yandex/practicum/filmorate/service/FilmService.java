@@ -103,4 +103,17 @@ public class FilmService {
         log.debug("Найдено {} популярных фильмов", popularFilms.size());
         return popularFilms;
     }
+
+    public List<Film> getCommonFilms(int userId, int friendId) {
+        log.debug("Получение общих фильмов для {} и {}", userId, friendId);
+        List<Film> commonFilms = filmStorage.getCommonFilmsSortedByPopularity(userId, friendId);
+        for (Film film : commonFilms) {
+            log.debug("Загрузка жанров для фильма с ID {}: {}", film.getId(), film.getGenres());
+            Set<Genre> genreSet = genreStorage.findByFilmId(film.getId());
+            film.setGenres(genreSet);
+            log.debug("Жанры для фильма с ID {} загружены: {}", film.getId(), film.getGenres());
+        }
+        log.debug("Найдено {} общих фильмов", commonFilms.size());
+        return commonFilms;
+    }
 }
