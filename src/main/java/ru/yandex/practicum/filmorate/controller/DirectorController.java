@@ -35,13 +35,13 @@ public class DirectorController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Director> getById (int id){
+    public ResponseEntity<Director> getById (@PathVariable int id){
         log.info("Получение режиссера с ID {}", id);
         return ResponseEntity.ok(directorService.getById(id));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete (int id){
+    public ResponseEntity<Void> delete (@PathVariable int id){
         log.info("Удаление режиссера с ID {}", id);
         directorService.delete(id);
         return ResponseEntity.noContent().build();

@@ -33,7 +33,7 @@ public class FilmService {
     @Qualifier("mpaDbStorage")
     private final MpaDbStorage mpaStorage;
 
-    @Qualifier
+    @Qualifier("directorDbStorage")
     private final DirectorStorage directorStorage;
 
     public Film create(Film f) {
@@ -119,5 +119,24 @@ public class FilmService {
         List<Film> popularFilms = likeStorage.findPopular(count);
         log.debug("Найдено {} популярных фильмов", popularFilms.size());
         return popularFilms;
+    }
+
+    /**
+     * Получение фильмов режиссера с сортировкой.
+     * Сортировка может быть по годам выпуска фильмов (year) или по количеству лайков (likes)
+     *
+     * @param directorId id режиссера
+     * @param sortBy параметр сортировки: "year" - по году выпуска, "likes" - по количеству лайков
+     * @return список фильмов
+     */
+    public List<Film> getByDirectorSorted(int directorId, String sortBy) {
+        log.debug("Поиск фильмов режиссера с ID {} с сортировкой по '{}'", directorId, sortBy);
+        List<Film> films = filmStorage.findByDirectorSorted(directorId, sortBy);
+        films.forEach(f -> {
+            f.setDirectors(directorStorage.getDirectorsByFilmId(f.getId()));
+            f.setGenres(genreStorage.findByFilmId(f.getId()));
+        });
+        log.debug("Найдено {} фильмов режиссера с ID {} с сортировкой по '{}'", films.size(), directorId, sortBy);
+        return films;
     }
 }

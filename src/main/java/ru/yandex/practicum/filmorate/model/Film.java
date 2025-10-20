@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -34,5 +35,6 @@ public class Film implements Identifiable {
     @NotNull
     private MpaRating mpa;
     private Set<Genre> genres = new LinkedHashSet<>();
+    @JsonAlias({"director"})
     private Set<Director> directors = new LinkedHashSet<>();
 }

@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -8,6 +9,7 @@ import lombok.Data;
 public class Director implements Identifiable {
     private int id;
     @NotNull
+    @NotEmpty
     @NotBlank (message = "Имя режиссера не может быть пустым.")
     private String name;
 }
