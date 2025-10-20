@@ -114,7 +114,7 @@ public class DirectorDbStorage implements DirectorStorage {
                 SELECT d.id, d.name
                 FROM directors d
                 JOIN film_directors fd ON fd.director_id = d.id
-                WHERE fd.film_id = :%s
+                WHERE fd.film_id = %s
                 ORDER BY d.id
                 """.formatted(par(pFILMID));
         return new HashSet<>(namedParameterJdbcTemplate.query(sql, new MapSqlParameterSource(pFILMID, filmId), directorRowMapper));

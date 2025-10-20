@@ -8,8 +8,8 @@ import lombok.Data;
 @Data
 public class Director implements Identifiable {
     private int id;
-    @NotNull
-    @NotEmpty
-    @NotBlank (message = "Имя режиссера не может быть пустым.")
+    @NotNull (message = "Имя режиссера не может быть null.")
+    @NotEmpty (message = "Имя режиссера не может быть пустым.")
+    @NotBlank (message = "Имя режиссера не может быть null и должен содержать хотя бы один символ, отличный от пробелов.")
     private String name;
 }

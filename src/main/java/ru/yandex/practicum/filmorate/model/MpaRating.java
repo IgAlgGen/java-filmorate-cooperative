@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 @Getter
@@ -25,7 +26,7 @@ public enum MpaRating {
                 return rating;
             }
         }
-        throw new IllegalArgumentException("Неизвестный MPA id: " + id);
+        throw new NotFoundException("Неизвестный MPA id: " + id);
     }
 
     @JsonCreator
