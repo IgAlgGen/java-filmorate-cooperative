@@ -139,4 +139,26 @@ public class FilmService {
         log.debug("Найдено {} фильмов режиссера с ID {} с сортировкой по '{}'", films.size(), directorId, sortBy);
         return films;
     }
+
+    public List<Film> searchFilmsByTitleAndDirector(String query, String by) {
+        log.debug("Поиск фильмов по запросу '{}' в полях: {}", query, by);
+        boolean byTitle = by.toLowerCase().contains("title");
+        boolean byDirector = by.toLowerCase().contains("director");
+
+        if(query.isEmpty()||query.isBlank()) {
+            log.debug("Параметр 'query' пустой или содержит только пробелы. Возвращается пустой список.");
+            throw new IllegalArgumentException("Параметр query не должен быть пустым или содержать только пробелы.");
+        }
+        if(!byTitle && !byDirector) {
+            log.debug("Параметр 'by' не содержит допустимых значений ('title' или 'director'). Возвращается пустой список.");
+            throw new IllegalArgumentException("Параметр by должен содержать 'title', 'director' или оба через запятую.");
+        }
+        List<Film> films = filmStorage.searchFilmsByTitleAndDirector(query, byTitle, byDirector);
+        films.forEach(f -> {
+            f.setDirectors(directorStorage.getDirectorsByFilmId(f.getId()));
+            f.setGenres(genreStorage.findByFilmId(f.getId()));
+        });
+        log.debug("Найдено {} фильмов по запросу '{}' в полях: {}", films.size(), query, by);
+        return films;
+    }
 }

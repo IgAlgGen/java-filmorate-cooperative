@@ -93,10 +93,25 @@ public class FilmController {
             @PathVariable int directorId,
             @RequestParam(name = "sortBy", defaultValue = "likes") String sortBy
     ) {
+        log.info("Получение фильмов режиссера с ID {} с сортировкой по '{}'", directorId, sortBy);
         // допустимые значения
         if (!sortBy.equals("likes") && !sortBy.equals("year")) {
             return ResponseEntity.badRequest().build();
         }
         return ResponseEntity.ok(filmService.getByDirectorSorted(directorId, sortBy));
+    }
+
+    /**
+     * Поиск фильмов по названию и/или режиссеру.
+     * @param query текст для поиска
+     * @param by может принимать значения director (поиск по режиссёру), title (поиск по названию), либо оба значения через запятую при поиске одновременно и по режиссеру и по названию.
+     * @return список фильмов, подходящих под критерии поиска
+     */
+    @GetMapping("/search")
+    public ResponseEntity<List<Film>> searchFilmsBytitleAndDidector(
+            @RequestParam("query") String query,
+            @RequestParam("by") String by) {
+        log.info("Поиск фильмов по запросу '{}' в полях: {}", query, by);
+        return ResponseEntity.ok(filmService.searchFilmsByTitleAndDirector(query, by));
     }
 }
