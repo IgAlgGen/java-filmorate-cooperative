@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.filmLike.FilmLikeStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
@@ -31,6 +33,9 @@ public class FilmService {
     @Qualifier("mpaDbStorage")
     private final MpaDbStorage mpaStorage;
 
+    @Qualifier("directorDbStorage")
+    private final DirectorStorage directorStorage;
+
     public Film create(Film f) {
         log.debug("Создание фильма: name='{}', releaseDate={}, duration={}", f.getName(), f.getReleaseDate(), f.getDuration());
         genreStorage.assertGenresExists(f.getGenres());
@@ -39,6 +44,9 @@ public class FilmService {
         log.debug("Обновление жанров для фильма с ID {}: {}", f.getId(), f.getGenres());
         genreStorage.renewGenres(savedFilm.getId(), f.getGenres());
         log.debug("Жанры для фильма с ID {} обновлены: {}", f.getId(), f.getGenres());
+        log.debug("Сохранение режиссеров для фильма с ID {}: {}", f.getId(), f.getDirectors());
+        directorStorage.setDirectorsForFilm(f.getId(), f.getDirectors());
+        log.debug("Режиссеры для фильма с ID {} сохранены: {}", f.getId(), f.getDirectors());
         log.debug("Фильм создан: id={}, title='{}'", savedFilm.getId(), savedFilm.getName());
         return getById(savedFilm.getId());
     }
@@ -52,6 +60,9 @@ public class FilmService {
         log.debug("Обновление жанров для фильма с ID {}: {}", f.getId(), f.getGenres());
         genreStorage.renewGenres(f.getId(), f.getGenres());
         log.debug("Жанры для фильма с ID {} обновлены: {}", f.getId(), f.getGenres());
+        log.debug("Обновление режиссеров для фильма с ID {}: {}", f.getId(), f.getDirectors());
+        directorStorage.setDirectorsForFilm(f.getId(), f.getDirectors());
+        log.debug("Режиссеры для фильма с ID {} обновлены: {}", f.getId(), f.getDirectors());
         return updatedFilm;
     }
 
@@ -62,6 +73,9 @@ public class FilmService {
         Set<Genre> genreSet = genreStorage.findByFilmId(id);
         film.setGenres(genreSet);
         log.debug("Жанры для фильма с ID {} загружены: {}", film.getId(), film.getGenres());
+        Set<Director> directorSet = directorStorage.getDirectorsByFilmId(id);
+        film.setDirectors(directorSet);
+        log.debug("Режиссеры для фильма с ID {} загружены: {}", film.getId(), film.getDirectors());
         log.debug("Найден фильм: id={}, title='{}'", film.getId(), film.getName());
         return film;
     }
@@ -74,6 +88,9 @@ public class FilmService {
             Set<Genre> genreSet = genreStorage.findByFilmId(film.getId());
             film.setGenres(genreSet);
             log.debug("Жанры для фильма с ID {} загружены: {}", film.getId(), film.getGenres());
+            Set<Director> directorSet = directorStorage.getDirectorsByFilmId(film.getId());
+            film.setDirectors(directorSet);
+            log.debug("Режиссеры для фильма с ID {} загружены: {}", film.getId(), film.getDirectors());
         }
         log.debug("Найдено {} фильмов", list.size());
         return list;
@@ -102,5 +119,24 @@ public class FilmService {
         List<Film> popularFilms = likeStorage.findPopular(count);
         log.debug("Найдено {} популярных фильмов", popularFilms.size());
         return popularFilms;
+    }
+
+    /**
+     * Получение фильмов режиссера с сортировкой.
+     * Сортировка может быть по годам выпуска фильмов (year) или по количеству лайков (likes)
+     *
+     * @param directorId id режиссера
+     * @param sortBy параметр сортировки: "year" - по году выпуска, "likes" - по количеству лайков
+     * @return список фильмов
+     */
+    public List<Film> getByDirectorSorted(int directorId, String sortBy) {
+        log.debug("Поиск фильмов режиссера с ID {} с сортировкой по '{}'", directorId, sortBy);
+        List<Film> films = filmStorage.findByDirectorSorted(directorId, sortBy);
+        films.forEach(f -> {
+            f.setDirectors(directorStorage.getDirectorsByFilmId(f.getId()));
+            f.setGenres(genreStorage.findByFilmId(f.getId()));
+        });
+        log.debug("Найдено {} фильмов режиссера с ID {} с сортировкой по '{}'", films.size(), directorId, sortBy);
+        return films;
     }
 }
