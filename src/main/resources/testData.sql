@@ -9,12 +9,15 @@ INSERT INTO users (id, email, login, name, birthday) VALUES
     (1, 'test1@example.com', 'test1', 'Test1', '1990-01-01'),
     (2, 'test2@example.com', 'test2', 'Test2', '1990-01-02'),
     (3, 'test3@example.com', 'test3', 'Test3', '1990-01-03');
+ALTER TABLE users ALTER COLUMN id RESTART WITH 4;
 
 INSERT INTO films (id, name, description, release_date, duration, mpa) VALUES
     (1, 'Film1', 'Description1', '2000-01-01', 120, 1),
     (2, 'Film2', 'Description2', '2001-01-01', 90, 2),
     (3, 'Film3', 'Description3', '2002-01-01', 110, 3);
+ALTER TABLE films ALTER COLUMN id RESTART WITH 4;
 
 INSERT INTO directors(id, name) VALUES (1, 'Steven Spielberg'), (2, 'Film Director'), (3, 'James Cameron');
+ALTER TABLE directors ALTER COLUMN id RESTART WITH 4;
 
 INSERT INTO film_directors(film_id, director_id) VALUES (1, 1), (2, 2);
