@@ -14,3 +14,7 @@ INSERT INTO films (id, name, description, release_date, duration, mpa) VALUES
     (1, 'Film1', 'Description1', '2000-01-01', 120, 1),
     (2, 'Film2', 'Description2', '2001-01-01', 90, 2),
     (3, 'Film3', 'Description3', '2002-01-01', 110, 3);
+
+INSERT INTO directors(id, name) VALUES (1, 'Steven Spielberg'), (2, 'Film Director'), (3, 'James Cameron');
+
+INSERT INTO film_directors(film_id, director_id) VALUES (1, 1), (2, 2);
