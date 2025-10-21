@@ -13,7 +13,5 @@ public interface FilmLikeStorage {
 
     List<Film> findPopular(int limit, Long genreId, Integer year);
 
-    List<Film> findPopular(int limit);
-
     Map<Integer, Set<Integer>> getUsersLikesData();
 }
