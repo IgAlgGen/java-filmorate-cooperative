@@ -10,8 +10,7 @@ import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmRowMapper;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @Repository
 @RequiredArgsConstructor
@@ -70,6 +69,36 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource()
                 .addValue("limit", limit);
         return namedParameterJdbcTemplate.query(sqlFilmlikePopular, mapSqlParameterSource, filmRowMapper);
+    }
+
+
+    /**
+     * Функция извлекает все записи из таблицы film_likes, сгруппированные по id пользователя.
+     * Извлеченные данные возвращаются в виде Map, где:
+     * ключ - id пользователя,
+     * значение - множество (Set) id фильмов, которым пользователь поставил лайк.
+     */
+    @Override
+    public Map<Integer, Set<Integer>> getUsersLikesData() {
+        final String sqlFilmlikeUsersLikes = """
+                SELECT user_id, film_id
+                FROM film_likes
+                ORDER BY user_id
+                """;
+        Map<Integer, Set<Integer>> usersLikesData = new HashMap<>();
+        namedParameterJdbcTemplate.query(
+                sqlFilmlikeUsersLikes,
+                rs -> {
+                    int userId = rs.getInt("user_id");
+                    int filmId = rs.getInt("film_id");
+                    if (!usersLikesData.containsKey(userId)) {
+                        usersLikesData.put(userId, new HashSet<>());
+                    }
+                    Set<Integer> userLikedFilms = usersLikesData.get(userId);
+                    userLikedFilms.add(filmId);
+                }
+        );
+        return usersLikesData;
     }
 
     private void assertFilmExists(int filmId) {
