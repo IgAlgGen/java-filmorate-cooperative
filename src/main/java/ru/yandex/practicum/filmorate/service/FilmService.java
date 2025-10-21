@@ -144,11 +144,11 @@ public class FilmService {
         log.debug("Поиск фильмов по запросу '{}' в полях: {}", query, by);
         boolean byTitle = by.toLowerCase().contains("title");
         boolean byDirector = by.toLowerCase().contains("director");
-        if(query.isEmpty() || query.isBlank()) {
+        if (query.isEmpty() || query.isBlank()) {
             log.debug("Параметр 'query' пустой или содержит только пробелы. Возвращается пустой список.");
             throw new IllegalArgumentException("Параметр query не должен быть пустым или содержать только пробелы.");
         }
-        if(!byTitle && !byDirector) {
+        if (!byTitle && !byDirector) {
             log.debug("Параметр 'by' не содержит допустимых значений ('title' или 'director'). Возвращается пустой список.");
             throw new IllegalArgumentException("Параметр by должен содержать 'title', 'director' или оба через запятую.");
         }
