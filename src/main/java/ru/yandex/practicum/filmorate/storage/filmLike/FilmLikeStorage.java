@@ -12,6 +12,7 @@ public interface FilmLikeStorage {
     boolean removeLike(int filmId, int userId);
 
     List<Film> findPopular(int limit, Long genreId, Integer year);
+    
     List<Film> findPopular(int limit);
 
     Map<Integer, Set<Integer>> getUsersLikesData();
