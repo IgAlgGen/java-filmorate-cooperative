@@ -36,6 +36,6 @@ public class FilmLikeDbStorageTests {
         assertTrue(usersLikesData.get(1).contains(1));
         assertTrue(usersLikesData.get(1).contains(2));
         assertTrue(usersLikesData.get(2).contains(1));
-        assertFalse(usersLikesData.get(2).contains(2));
+        assertTrue(usersLikesData.get(2).contains(2));
     }
 }

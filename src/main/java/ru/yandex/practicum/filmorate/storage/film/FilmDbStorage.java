@@ -11,7 +11,10 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.*;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -108,6 +111,29 @@ public class FilmDbStorage implements FilmStorage {
         return namedParameterJdbcTemplate.update(sqlFilmDelete, new MapSqlParameterSource(pID, id)) > 0;
     }
 
+    @Override
+    public List<Film> getCommonFilmsSortedByPopularity(int userId, int friendId) {
+        final String sqlGetCommonFilms = """
+                SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa
+                FROM films AS f
+                JOIN film_likes AS fl ON f.id = fl.film_id
+                WHERE f.id IN (
+                    SELECT film_id FROM film_likes WHERE user_id = :userId
+                )
+                AND f.id IN (
+                    SELECT film_id FROM film_likes WHERE user_id = :friendId
+                )
+                GROUP BY f.id
+                ORDER BY COUNT(fl.user_id) DESC
+                """;
+
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("userId", userId)
+                .addValue("friendId", friendId);
+
+        return namedParameterJdbcTemplate.query(sqlGetCommonFilms, params, filmRowMapper);
+    }
+
     /**
      * Получение списка фильмов по идентификатору режиссера с сортировкой
      * @param directorId id режиссера
@@ -140,5 +166,4 @@ public class FilmDbStorage implements FilmStorage {
                 sql, new MapSqlParameterSource("directorId", directorId), filmRowMapper);
         return films;
     }
-
 }
