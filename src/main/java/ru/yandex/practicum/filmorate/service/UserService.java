@@ -4,11 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.utils.FilmRecommendationData;
+import ru.yandex.practicum.filmorate.storage.filmLike.FilmLikeStorage;
 import ru.yandex.practicum.filmorate.storage.friendship.FriendshipStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -20,6 +24,11 @@ public class UserService {
 
     @Qualifier("friendshipDbStorage")
     private final FriendshipStorage friendshipStorage;
+
+    @Qualifier("filmLikeDbStorage")
+    private final FilmLikeStorage filmLikeStorage;
+
+    private final FilmService filmService;
 
 
     public User create(User u) {
@@ -87,4 +96,57 @@ public class UserService {
         return commonFriends;
     }
 
+    public List<Film> getRecommendations(int targetUserId) {
+        log.debug("Получение рекомендаций фильмов для пользователя с ID {}", targetUserId);
+        // получаем Map всех пользователей с id фильмов, которые они лайкали
+        Map<Integer, Set<Integer>> usersLikesData = filmLikeStorage.getUsersLikesData();
+
+        // если пользователя нет в данных, значит он ничего не лайкал, и рекомендаций ему дать нельзя
+        if (!usersLikesData.containsKey(targetUserId)) {
+            log.debug("Пользователь с ID={} не имеет ни одного лайка", targetUserId);
+            return new ArrayList<>();
+        }
+
+        // преобразуем множества (Set) id фильмов в объекты FilmRecommendationData
+        Map<Integer, FilmRecommendationData> filmRecommendationDataMap = usersLikesData.entrySet().stream()
+                .map(userIdMovieIdSetEntry -> {
+                    int userId = userIdMovieIdSetEntry.getKey();
+                    Set<Integer> movieIdSet = userIdMovieIdSetEntry.getValue();
+                    Map.Entry<Integer, FilmRecommendationData> newEntry = Map.entry(userId, new FilmRecommendationData(userId));
+                    newEntry.getValue().setLikedFilmIds(movieIdSet);
+                    return newEntry;
+                })
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        // сохраняем информацию о пользователе, которому нужно дать рекомендации
+        // и удаляем его из filmRecommendationDataMap
+        Set<Integer> targetUserLikedFilms = filmRecommendationDataMap.get(targetUserId).getLikedFilmIds();
+        filmRecommendationDataMap.remove(targetUserId);
+
+        // если пользователей в filmRecommendationDataMap не осталось, значит рекомендаций сделать нельзя
+        if (filmRecommendationDataMap.isEmpty()) {
+            log.debug("В БД недостаточно пользователей с лайками, чтобы сделать рекомендации");
+            return new ArrayList<>();
+        }
+
+        // для всех пользователей в filmRecommendationDataMap рассчитываем схожесть по лайкам
+        // убираем тех, у кого схожесть 0
+        // сортируем по схожести
+        // берем первого
+        Set<Integer> mostSimilarUserLikedFilms = filmRecommendationDataMap.values().stream()
+                .peek(recData -> recData.computeSimilarityScore(targetUserLikedFilms))
+                .filter(recData -> recData.getSimilarityScore() > 0)
+                .max(Comparator.comparing(FilmRecommendationData::getSimilarityScore))
+                .map(FilmRecommendationData::getLikedFilmIds)
+                .orElse(Collections.emptySet());
+
+        // находим ID фильмов, которые пользователь не лайкал
+        // возвращаем список объектов этих фильмов
+        Set<Integer> filmsUserDoesNotHave = new HashSet<>(mostSimilarUserLikedFilms);
+        filmsUserDoesNotHave.removeAll(targetUserLikedFilms);
+        log.debug("ID фильмов, которые рекомендуются пользователю: {}", filmsUserDoesNotHave);
+        return filmsUserDoesNotHave.stream()
+                .map(filmService::getById)
+                .toList();
+    }
 }

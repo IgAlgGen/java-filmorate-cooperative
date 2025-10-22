@@ -83,9 +83,12 @@ public class FilmController {
     Если значение параметра count не задано, верните первые 10.
      */
     @GetMapping("/popular")
-    public ResponseEntity<List<Film>> getPopular(@RequestParam(defaultValue = "10") @Positive int count) {
+    public ResponseEntity<List<Film>> getPopular(
+            @RequestParam(defaultValue = "10") @Positive int count,
+            @RequestParam(required = false) Long genreId,
+            @RequestParam(required = false) Integer year) {
         log.info("Получение популярных фильмов, количество: {}", count);
-        return ResponseEntity.ok(filmService.getPopular(count));
+        return ResponseEntity.ok(filmService.getPopular(count, genreId, year));
     }
 
     @GetMapping("/director/{directorId}")

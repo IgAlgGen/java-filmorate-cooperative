@@ -21,3 +21,8 @@ INSERT INTO directors(id, name) VALUES (1, 'Steven Spielberg'), (2, 'Film Direct
 ALTER TABLE directors ALTER COLUMN id RESTART WITH 4;
 
 INSERT INTO film_directors(film_id, director_id) VALUES (1, 1), (2, 2);
+
+INSERT INTO film_likes (film_id, user_id) VALUES
+    (1, 1),
+    (2, 1),
+    (1, 2);

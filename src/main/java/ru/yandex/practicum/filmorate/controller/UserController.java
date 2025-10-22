@@ -1,15 +1,16 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import org.springframework.validation.annotation.Validated;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
 import java.net.URI;
 import java.util.List;
 
@@ -36,7 +37,7 @@ public class UserController {
 
     @PutMapping
     public ResponseEntity<User> update(@Valid @RequestBody User user) {
-        log.info("Обновление пользователя с ID {}: {}", user.getId(), user.toString());
+        log.info("Обновление пользователя с ID {}: {}", user.getId(), user);
         User updated = userService.update(user);
         return ResponseEntity.ok(updated);
     }
@@ -62,7 +63,7 @@ public class UserController {
     }
 
     /**
-    Добавление в друзья.
+     * Добавление в друзья.
      */
     @PutMapping("/{id}/friends/{friendId}")
     public ResponseEntity<Void> addFriend(@PathVariable @Positive int id, @PathVariable @Positive int friendId) {
@@ -72,7 +73,7 @@ public class UserController {
     }
 
     /**
-    Удаление из друзей.
+     * Удаление из друзей.
      */
     @DeleteMapping("/{id}/friends/{friendId}")
     public ResponseEntity<Void> removeFriend(@PathVariable @Positive int id, @PathVariable @Positive int friendId) {
@@ -82,7 +83,7 @@ public class UserController {
     }
 
     /**
-    Возвращаем список пользователей, являющихся его друзьями.
+     * Возвращаем список пользователей, являющихся его друзьями.
      */
     @GetMapping("/{id}/friends")
     public ResponseEntity<List<User>> getFriends(@PathVariable @Positive int id) {
@@ -91,11 +92,20 @@ public class UserController {
     }
 
     /**
-    Список друзей, общих с другим пользователем.
+     * Список друзей, общих с другим пользователем.
      */
     @GetMapping("/{id}/friends/common/{otherId}")
     public ResponseEntity<List<User>> getCommonFriends(@PathVariable @Positive int id, @PathVariable @Positive int otherId) {
         log.info("Получение списка общих друзей между пользователями с ID {} и ID {}", id, otherId);
         return ResponseEntity.ok(userService.getCommonFriends(id, otherId));
+    }
+
+    /**
+     * Рекомендации фильмов для пользователя.
+     */
+    @GetMapping("/{id}/recommendations")
+    public ResponseEntity<List<Film>> getRecommendations(@PathVariable @Positive int id) {
+        log.info("Получение рекомендаций фильмов для пользователя с ID {}", id);
+        return ResponseEntity.ok(userService.getRecommendations(id));
     }
 }
