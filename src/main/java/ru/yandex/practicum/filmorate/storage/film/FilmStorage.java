@@ -17,5 +17,6 @@ public interface FilmStorage {
     boolean deleteById(int id);
 
     List<Film> getCommonFilmsSortedByPopularity(int userId, int friendId);
+
     List<Film> findByDirectorSorted(int directorId, String sortBy);
 }
