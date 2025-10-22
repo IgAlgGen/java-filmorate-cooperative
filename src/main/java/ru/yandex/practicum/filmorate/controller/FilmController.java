@@ -1,15 +1,15 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import org.springframework.validation.annotation.Validated;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
 import java.net.URI;
 import java.util.List;
 
@@ -116,5 +116,12 @@ public class FilmController {
             @RequestParam("by") String by) {
         log.info("Поиск фильмов по запросу '{}' в полях: {}", query, by);
         return ResponseEntity.ok(filmService.searchFilmsByTitleAndDirector(query, by));
+    }
+  
+    @GetMapping("/common")
+    public ResponseEntity<List<Film>> getCommonFilms(@RequestParam @Positive int userId,
+                                                     @RequestParam @Positive int friendId) {
+        log.info("Получение общих фильмов: {}, {}", userId, friendId);
+        return ResponseEntity.ok(filmService.getCommonFilms(userId, friendId));
     }
 }
