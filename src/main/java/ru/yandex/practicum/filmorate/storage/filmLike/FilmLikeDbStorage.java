@@ -10,8 +10,7 @@ import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmRowMapper;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @Repository
 @RequiredArgsConstructor
@@ -57,19 +56,58 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
     }
 
     @Override
-    public List<Film> findPopular(int limit) {
-        final String sqlFilmlikePopular = """
-                SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa
-                FROM films f
-                LEFT JOIN film_likes fl ON fl.film_id = f.id
-                GROUP BY f.id, f.name, f.description, f.release_date, f.duration, f.mpa
-                ORDER BY COUNT(fl.user_id) DESC, f.id ASC
-                LIMIT :limit
-                """;
+    public List<Film> findPopular(int limit, Long genreId, Integer year) {
         if (limit <= 0) return Collections.emptyList();
-        MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource()
+        if (genreId != null) assertGenreExists(genreId);
+
+        final String sql = """
+        SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa
+        FROM films f
+        LEFT JOIN film_likes  fl ON fl.film_id = f.id
+        LEFT JOIN film_genres fg ON fg.film_id  = f.id
+        WHERE (:genreId IS NULL OR fg.genre_id = :genreId)
+          AND (:year    IS NULL OR YEAR(f.release_date) = :year)
+        GROUP BY f.id, f.name, f.description, f.release_date, f.duration, f.mpa
+        ORDER BY COUNT(fl.user_id) DESC, f.id ASC
+        LIMIT :limit
+        """;
+
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("genreId", genreId)
+                .addValue("year", year)
                 .addValue("limit", limit);
-        return namedParameterJdbcTemplate.query(sqlFilmlikePopular, mapSqlParameterSource, filmRowMapper);
+
+        return namedParameterJdbcTemplate.query(sql, params, filmRowMapper);
+    }
+
+
+    /**
+     * Функция извлекает все записи из таблицы film_likes, сгруппированные по id пользователя.
+     * Извлеченные данные возвращаются в виде Map, где:
+     * ключ - id пользователя,
+     * значение - множество (Set) id фильмов, которым пользователь поставил лайк.
+     */
+    @Override
+    public Map<Integer, Set<Integer>> getUsersLikesData() {
+        final String sqlFilmlikeUsersLikes = """
+                SELECT user_id, film_id
+                FROM film_likes
+                ORDER BY user_id
+                """;
+        Map<Integer, Set<Integer>> usersLikesData = new HashMap<>();
+        namedParameterJdbcTemplate.query(
+                sqlFilmlikeUsersLikes,
+                rs -> {
+                    int userId = rs.getInt("user_id");
+                    int filmId = rs.getInt("film_id");
+                    if (!usersLikesData.containsKey(userId)) {
+                        usersLikesData.put(userId, new HashSet<>());
+                    }
+                    Set<Integer> userLikedFilms = usersLikesData.get(userId);
+                    userLikedFilms.add(filmId);
+                }
+        );
+        return usersLikesData;
     }
 
     private void assertFilmExists(int filmId) {
@@ -91,5 +129,17 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
         Boolean ok = namedParameterJdbcTemplate.queryForObject(sqlUserExists,
                 mapSqlParameterSource, Boolean.class);
         if (Boolean.FALSE.equals(ok)) throw new NotFoundException("Пользователь не найден: id=" + userId);
+    }
+
+    private void assertGenreExists(long genreId) {
+        final String sql = "SELECT EXISTS(SELECT 1 FROM genres WHERE id = :gid)";
+        Boolean ok = namedParameterJdbcTemplate.queryForObject(
+                sql,
+                new MapSqlParameterSource("gid", genreId),
+                Boolean.class
+        );
+        if (Boolean.FALSE.equals(ok)) {
+            throw new NotFoundException("Жанр не найден: id=" + genreId);
+        }
     }
 }

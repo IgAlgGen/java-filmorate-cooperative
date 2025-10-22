@@ -17,8 +17,5 @@ INSERT INTO films (name, description, release_date, duration, mpa) VALUES
 
 INSERT INTO film_likes (film_id, user_id) VALUES
     (1, 1),
-    (1, 2),
     (2, 1),
-    (2, 2),
-    (2, 3),
-    (3, 3);
+    (1, 2);
