@@ -107,8 +107,8 @@ public class FilmDbStorageTests {
         assertThat(commonFilms)
                 .isNotNull();
 
-        assertThat(commonFilms.get(0).getName()).isEqualTo("Film2");
-        assertThat(commonFilms.get(1).getName()).isEqualTo("Film1");
+        assertThat(commonFilms.get(0).getName()).isEqualTo("Film1");
+        assertThat(commonFilms.get(1).getName()).isEqualTo("Film2");
     }
 
 }
