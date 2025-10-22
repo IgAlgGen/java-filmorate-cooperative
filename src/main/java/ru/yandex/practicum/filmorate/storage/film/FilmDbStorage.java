@@ -134,4 +134,36 @@ public class FilmDbStorage implements FilmStorage {
         return namedParameterJdbcTemplate.query(sqlGetCommonFilms, params, filmRowMapper);
     }
 
+    /**
+     * Получение списка фильмов по идентификатору режиссера с сортировкой
+     * @param directorId id режиссера
+     * @param sortBy параметр сортировки: "year" - по году выпуска, "likes" - по количеству лайков
+     * @return список фильмов
+     */
+    @Override
+    public List<Film> findByDirectorSorted(int directorId, String sortBy) {
+        String orderBy = switch (sortBy) {
+            case "likes" -> "likes_count DESC, f.id";
+            case "year"  -> "EXTRACT(YEAR FROM f.release_date), f.id";
+            default      -> "f.id";
+        };
+
+        final String sql = """
+        SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa
+             , COALESCE(lc.cnt, 0) AS likes_count
+        FROM films f
+        JOIN film_directors fd ON fd.film_id = f.id
+        LEFT JOIN (
+           SELECT film_id, COUNT(*) AS cnt
+           FROM film_likes
+           GROUP BY film_id
+        ) lc ON lc.film_id = f.id
+        WHERE fd.director_id = :directorId
+        ORDER BY %s
+        """.formatted(orderBy);
+
+        List<Film> films = namedParameterJdbcTemplate.query(
+                sql, new MapSqlParameterSource("directorId", directorId), filmRowMapper);
+        return films;
+    }
 }

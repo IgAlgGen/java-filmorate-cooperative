@@ -83,9 +83,24 @@ public class FilmController {
     Если значение параметра count не задано, верните первые 10.
      */
     @GetMapping("/popular")
-    public ResponseEntity<List<Film>> getPopular(@RequestParam(defaultValue = "10") @Positive int count) {
+    public ResponseEntity<List<Film>> getPopular(
+            @RequestParam(defaultValue = "10") @Positive int count,
+            @RequestParam(required = false) Long genreId,
+            @RequestParam(required = false) Integer year) {
         log.info("Получение популярных фильмов, количество: {}", count);
-        return ResponseEntity.ok(filmService.getPopular(count));
+        return ResponseEntity.ok(filmService.getPopular(count, genreId, year));
+    }
+
+    @GetMapping("/director/{directorId}")
+    public ResponseEntity<List<Film>> getFilmsByDirectorSorted(
+            @PathVariable int directorId,
+            @RequestParam(name = "sortBy", defaultValue = "likes") String sortBy
+    ) {
+        // допустимые значения
+        if (!sortBy.equals("likes") && !sortBy.equals("year")) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(filmService.getByDirectorSorted(directorId, sortBy));
     }
 
     @GetMapping("/common")
