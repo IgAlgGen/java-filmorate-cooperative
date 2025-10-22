@@ -106,9 +106,8 @@ public class FilmController {
 
     /**
      * Поиск фильмов по названию и/или режиссеру.
-     *
      * @param query текст для поиска
-     * @param by    может принимать значения director (поиск по режиссёру), title (поиск по названию), либо оба значения через запятую при поиске одновременно и по режиссеру и по названию.
+     * @param by может принимать значения director (поиск по режиссёру), title (поиск по названию), либо оба значения через запятую при поиске одновременно и по режиссеру и по названию.
      * @return список фильмов, подходящих под критерии поиска
      */
     @GetMapping("/search")
@@ -118,7 +117,6 @@ public class FilmController {
         log.info("Поиск фильмов по запросу '{}' в полях: {}", query, by);
         return ResponseEntity.ok(filmService.searchFilmsByTitleAndDirector(query, by));
     }
-
     @GetMapping("/common")
     public ResponseEntity<List<Film>> getCommonFilms(@RequestParam @Positive int userId,
                                                      @RequestParam @Positive int friendId) {
