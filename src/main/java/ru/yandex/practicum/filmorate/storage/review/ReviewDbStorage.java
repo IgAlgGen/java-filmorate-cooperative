@@ -10,7 +10,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.storage.film.FilmRowMapper;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -21,7 +20,6 @@ import java.util.Optional;
 public class ReviewDbStorage implements ReviewStorage {
 
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-    private final FilmRowMapper filmRowMapper;
     private final ReviewRowMapper reviewRowMapper;
 
     @Override
@@ -75,17 +73,15 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public Optional<Review> getReviewForId(Long id) {
-        final String sqlGetReviewForId = "SELECT\n" +
-                "        r.id,\n" +
-                "        r.content,\n" +
-                "        r.user_id,\n" +
-                "        r.film_id,\n" +
-                "        COUNT(CASE WHEN l.is_positive = TRUE THEN 1 END) AS positive_likes_count,\n" +
-                "        COUNT(CASE WHEN l.is_positive = FALSE THEN 1 END) AS negative_likes_count\n" +
-                "        FROM reviews r\n" +
-                "        LEFT JOIN reviews_likes l ON r.id = l.review_id\n" +
-                "        WHERE r.id = :reviewId\n" +
-                "        GROUP BY r.id, r.content, r.user_id, r.film_id;";
+        final String sqlGetReviewForId = """
+                SELECT r.id, r.content, r.user_id, r.film_id, r.is_positive,
+                COUNT(CASE WHEN l.is_like = TRUE THEN 1 END) AS positive_likes_count,
+                COUNT(CASE WHEN l.is_like = FALSE THEN 1 END) AS negative_likes_count
+                FROM reviews r
+                LEFT JOIN reviews_likes l ON r.id = l.review_id
+                WHERE r.id = :reviewId
+                GROUP BY r.id, r.content, r.user_id, r.film_id;
+                """;
         try {
             return Optional.ofNullable(namedParameterJdbcTemplate.queryForObject(sqlGetReviewForId,
                     new MapSqlParameterSource("reviewId", id), reviewRowMapper));
@@ -96,21 +92,19 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public List<Review> getReviewsForFilmId(int filmId, int count) {
-        final String sqlGetReviewsForIdFilm = "SELECT\n" +
-                "    r.id,\n" +
-                "    r.content,\n" +
-                "    r.user_id,\n" +
-                "    r.film_id,\n" +
-                "    COUNT(CASE WHEN l.is_positive = TRUE  THEN 1 END) AS positive_likes_count,\n" +
-                "    COUNT(CASE WHEN l.is_positive = FALSE THEN 1 END) AS negative_likes_count,\n" +
-                "    (COUNT(CASE WHEN l.is_positive = TRUE  THEN 1 END) -\n" +
-                "     COUNT(CASE WHEN l.is_positive = FALSE THEN 1 END)) AS rating_score\n" +
-                "FROM reviews r\n" +
-                "LEFT JOIN reviews_likes l ON r.id = l.review_id\n" +
-                "WHERE r.film_id = :filmId\n" +
-                "GROUP BY r.id, r.content, r.user_id, r.film_id\n" +
-                "ORDER BY rating_score DESC, r.id ASC\n" +
-                "LIMIT :count;";
+        final String sqlGetReviewsForIdFilm = """
+                SELECT r.id, r.content, r.user_id, r.film_id, r.is_positive,
+                COUNT(CASE WHEN l.is_like = TRUE  THEN 1 END) AS positive_likes_count,
+                COUNT(CASE WHEN l.is_like = FALSE THEN 1 END) AS negative_likes_count,
+                (COUNT(CASE WHEN l.is_like = TRUE  THEN 1 END) -
+                COUNT(CASE WHEN l.is_like = FALSE THEN 1 END)) AS rating_score
+                FROM reviews r
+                LEFT JOIN reviews_likes l ON r.id = l.review_id
+                WHERE r.film_id = :filmId
+                GROUP BY r.id, r.content, r.user_id, r.film_id
+                ORDER BY rating_score DESC, r.id ASC
+                LIMIT :count;
+                """;
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("filmId", filmId)
                 .addValue("count", count);
@@ -119,33 +113,31 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public List<Review> getReviews(int count) {
-        final String sqlGetReviews = "SELECT\n" +
-                "    r.id,\n" +
-                "    r.content,\n" +
-                "    r.user_id,\n" +
-                "    r.film_id,\n" +
-                "    COUNT(CASE WHEN l.is_positive = TRUE  THEN 1 END) AS positive_likes_count,\n" +
-                "    COUNT(CASE WHEN l.is_positive = FALSE THEN 1 END) AS negative_likes_count,\n" +
-                "    (COUNT(CASE WHEN l.is_positive = TRUE  THEN 1 END) -\n" +
-                "     COUNT(CASE WHEN l.is_positive = FALSE THEN 1 END)) AS rating_score\n" +
-                "FROM reviews r\n" +
-                "LEFT JOIN reviews_likes l ON r.id = l.review_id\n" +
-                "GROUP BY r.id, r.content, r.user_id, r.film_id\n" +
-                "ORDER BY rating_score DESC, r.id ASC\n" +
-                "LIMIT :count;";
+        final String sqlGetReviews = """
+                SELECT r.id, r.content, r.user_id, r.film_id, r.is_positive,
+                COUNT(CASE WHEN l.is_like = TRUE  THEN 1 END) AS positive_likes_count,
+                COUNT(CASE WHEN l.is_like = FALSE THEN 1 END) AS negative_likes_count,
+                (COUNT(CASE WHEN l.is_like = TRUE  THEN 1 END) -
+                COUNT(CASE WHEN l.is_like = FALSE THEN 1 END)) AS rating_score
+                FROM reviews r
+                LEFT JOIN reviews_likes l ON r.id = l.review_id
+                GROUP BY r.id, r.content, r.user_id, r.film_id
+                ORDER BY rating_score DESC, r.id ASC
+                LIMIT :count;
+                """;
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("count", count);
         return namedParameterJdbcTemplate.query(sqlGetReviews, params, reviewRowMapper);
     }
 
     @Override
-    public Review addLikeReview(Long id, int userId, boolean isPositive) {
+    public void addLikeReview(Long id, int userId, boolean isPositive) {
         deleteLikeReview(id, userId);
         if (getReviewForId(id).isEmpty()) {
             throw new NotFoundException("Отзыв не найден id: " + id);
         }
         final String sqlLikeInsert = """
-                INSERT INTO reviews_likes (review_Id, user_id, is_positive)
+                INSERT INTO reviews_likes (review_Id, user_id, is_like)
                 VALUES (:reviewId, :userId, :isPositive)
                 """;
         MapSqlParameterSource params = new MapSqlParameterSource()
@@ -153,13 +145,10 @@ public class ReviewDbStorage implements ReviewStorage {
                 .addValue("userId", userId)
                 .addValue("isPositive", isPositive);
         namedParameterJdbcTemplate.update(sqlLikeInsert, params);
-        Review review = getReviewForId(id).get();
-        System.out.println(review);
-        return review;
     }
 
     @Override
-    public Review deleteLikeReview(Long id, int userId) {
+    public void deleteLikeReview(Long id, int userId) {
         if (getReviewForId(id).isEmpty()) {
             throw new NotFoundException("Отзыв не найден id: " + id);
         }
@@ -170,8 +159,5 @@ public class ReviewDbStorage implements ReviewStorage {
                 .addValue("reviewId", id)
                 .addValue("userId", userId);
         namedParameterJdbcTemplate.update(sqlLikeDelete, params);
-        Review review = getReviewForId(id).get();
-        System.out.println(review);
-        return review;
     }
 }

@@ -19,8 +19,8 @@ public interface ReviewStorage {
 
     List<Review> getReviews(int count);
 
-    Review addLikeReview(Long id, int userId, boolean isPositive);
+    void addLikeReview(Long id, int userId, boolean isPositive);
 
-    Review deleteLikeReview(Long id, int userId);
+    void deleteLikeReview(Long id, int userId);
 
 }

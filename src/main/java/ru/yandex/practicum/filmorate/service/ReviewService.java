@@ -35,6 +35,9 @@ public class ReviewService {
     }
 
     public Review updateReview(Review review) {
+        if (reviewStorage.getReviewForId(review.getReviewId()).isEmpty()) {
+            throw new NotFoundException("Отзыв с id: " + review.getReviewId() + " не найден.");
+        }
         return reviewStorage.updateReview(review);
     }
 
@@ -43,11 +46,8 @@ public class ReviewService {
     }
 
     public Review getReviewForId(Long id) {
-        if (reviewStorage.getReviewForId(id).isPresent()) {
-            return reviewStorage.getReviewForId(id).get();
-        } else {
-            throw new NotFoundException("Не найден отзыв с id: " + id);
-        }
+        return reviewStorage.getReviewForId(id).orElseThrow(() ->
+                new NotFoundException("Отзыв с id: " + id + " не найден."));
     }
 
     public List<Review> getReviewsForFilmId(int filmId, int count) {
@@ -58,16 +58,16 @@ public class ReviewService {
         }
     }
 
-    public Review addLikeReview(Long id, int userId) {
-        return reviewStorage.addLikeReview(id, userId, true);
+    public void addLikeReview(Long id, int userId) {
+        reviewStorage.addLikeReview(id, userId, true);
     }
 
-    public Review addDislikeReview(Long id, int userId) {
-        return reviewStorage.addLikeReview(id, userId, false);
+    public void addDislikeReview(Long id, int userId) {
+        reviewStorage.addLikeReview(id, userId, false);
     }
 
-    public Review deleteLikeReview(Long id, int userId) {
-        return reviewStorage.deleteLikeReview(id, userId);
+    public void deleteLikeReview(Long id, int userId) {
+        reviewStorage.deleteLikeReview(id, userId);
     }
 
 }
