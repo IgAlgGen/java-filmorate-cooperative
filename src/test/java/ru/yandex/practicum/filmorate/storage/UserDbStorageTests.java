@@ -42,7 +42,7 @@ class UserDbStorageTests {
 
     @Test
     public void testCreateUser() {
-        User newUser = new User(0, "newuser", "New User", "newUSer@example.com", LocalDate.of(1995, 5, 15), new HashSet<>());
+        User newUser = new User(4, "newuser", "New User", "newUSer@example.com", LocalDate.of(1995, 5, 15), new HashSet<>());
         User createdUser = userStorage.create(newUser);
         User retrievedUser = userStorage.getById(createdUser.getId()).orElseThrow();
         assertThat(retrievedUser).isEqualTo(createdUser);

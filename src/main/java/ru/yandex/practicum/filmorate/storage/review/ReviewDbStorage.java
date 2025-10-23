@@ -67,7 +67,7 @@ public class ReviewDbStorage implements ReviewStorage {
         int result = namedParameterJdbcTemplate.update(sqlReviewDelete,
                 new MapSqlParameterSource("reviewId", id));
         if (result == 0) {
-            throw new NotFoundException("Отзыв не найден: id=" + id );
+            throw new NotFoundException("Отзыв не найден: id=" + id);
         }
     }
 
