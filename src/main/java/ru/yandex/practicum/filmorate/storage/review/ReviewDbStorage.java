@@ -44,15 +44,13 @@ public class ReviewDbStorage implements ReviewStorage {
     @Transactional
     public Review updateReview(Review review) {
         final String sqlReviewUpdate = """
-                UPDATE reviews
-                SET content = :content, film_id = :filmId, user_id = :userId, is_positive = :isPositive
-                WHERE id = :reviewId
-                """;
+        UPDATE reviews
+        SET content = :content, is_positive = :isPositive
+        WHERE id = :reviewId
+        """;
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("reviewId", review.getReviewId())
                 .addValue("content", review.getContent())
-                .addValue("filmId", review.getFilmId())
-                .addValue("userId", review.getUserId())
                 .addValue("isPositive", review.getIsPositive());
         int updated = namedParameterJdbcTemplate.update(sqlReviewUpdate, params);
         if (updated == 0) {
