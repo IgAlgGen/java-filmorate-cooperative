@@ -1,15 +1,15 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import org.springframework.validation.annotation.Validated;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
 import java.net.URI;
 import java.util.List;
 
@@ -59,7 +59,7 @@ public class FilmController {
     }
 
     /**
-    Пользователь ставит лайк фильму
+     * Пользователь ставит лайк фильму
      */
     @PutMapping("/{id}/like/{userId}")
     public ResponseEntity<Void> addLike(@PathVariable @Positive int id, @PathVariable @Positive int userId) {
@@ -69,7 +69,7 @@ public class FilmController {
     }
 
     /**
-    Пользователь удаляет лайк.
+     * Пользователь удаляет лайк.
      */
     @DeleteMapping("/{id}/like/{userId}")
     public ResponseEntity<Void> removeLike(@PathVariable @Positive int id, @PathVariable @Positive int userId) {
@@ -79,12 +79,49 @@ public class FilmController {
     }
 
     /**
-    Возвращает список из первых count фильмов по количеству лайков.
-    Если значение параметра count не задано, верните первые 10.
+     * Возвращает список из первых count фильмов по количеству лайков.
+     * Если значение параметра count не задано, верните первые 10.
      */
     @GetMapping("/popular")
-    public ResponseEntity<List<Film>> getPopular(@RequestParam(defaultValue = "10") @Positive int count) {
+    public ResponseEntity<List<Film>> getPopular(
+            @RequestParam(defaultValue = "10") @Positive int count,
+            @RequestParam(required = false) Long genreId,
+            @RequestParam(required = false) Integer year) {
         log.info("Получение популярных фильмов, количество: {}", count);
-        return ResponseEntity.ok(filmService.getPopular(count));
+        return ResponseEntity.ok(filmService.getPopular(count, genreId, year));
+    }
+
+    @GetMapping("/director/{directorId}")
+    public ResponseEntity<List<Film>> getFilmsByDirectorSorted(
+            @PathVariable int directorId,
+            @RequestParam(name = "sortBy", defaultValue = "likes") String sortBy
+    ) {
+        log.info("Получение фильмов режиссера с ID {} с сортировкой по '{}'", directorId, sortBy);
+        // допустимые значения
+        if (!sortBy.equals("likes") && !sortBy.equals("year")) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(filmService.getByDirectorSorted(directorId, sortBy));
+    }
+
+    /**
+     * Поиск фильмов по названию и/или режиссеру.
+     * @param query текст для поиска
+     * @param by может принимать значения director (поиск по режиссёру), title (поиск по названию), либо оба значения через запятую при поиске одновременно и по режиссеру и по названию.
+     * @return список фильмов, подходящих под критерии поиска
+     */
+    @GetMapping("/search")
+    public ResponseEntity<List<Film>> searchFilmsBytitleAndDidector(
+            @RequestParam("query") String query,
+            @RequestParam("by") String by) {
+        log.info("Поиск фильмов по запросу '{}' в полях: {}", query, by);
+        return ResponseEntity.ok(filmService.searchFilmsByTitleAndDirector(query, by));
+    }
+
+    @GetMapping("/common")
+    public ResponseEntity<List<Film>> getCommonFilms(@RequestParam @Positive int userId,
+                                                     @RequestParam @Positive int friendId) {
+        log.info("Получение общих фильмов: {}, {}", userId, friendId);
+        return ResponseEntity.ok(filmService.getCommonFilms(userId, friendId));
     }
 }

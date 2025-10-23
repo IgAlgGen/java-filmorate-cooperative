@@ -42,9 +42,15 @@ public class GlobalExceptionHandler {
     //Ошибки парсинга JSON тела запроса
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Map<String,String>> handleJsonParse(HttpMessageNotReadableException ex) {
-        Map<String, String> errors = new HashMap<>();
-        errors.put("error", "Некорректный JSON: " + ex.getMostSpecificCause().getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errors);
+        Throwable root = ex.getMostSpecificCause();
+        //NotFound, возвращаем 404
+        if (root instanceof NotFoundException) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", root.getMessage()));
+        }
+        // Иначе это реально «плохой JSON» → 400
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", "Некорректный JSON: " + (root != null ? root.getMessage() : ex.getMessage())));
     }
 }
 

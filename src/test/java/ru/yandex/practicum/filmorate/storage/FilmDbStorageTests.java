@@ -99,4 +99,40 @@ public class FilmDbStorageTests {
         assertThat(films).isNotNull();
         assertThat(films.size()).isEqualTo(2);
     }
+
+    @Test
+    public void searchFilmsByTitleAndDirector_titleFlagON() {
+        var films = filmStorage.searchFilmsByTitleAndDirector("film", true, false);
+        assertThat(films).isNotNull();
+        assertThat(films.size()).isEqualTo(3);
+        assertThat(films.getFirst()).hasFieldOrPropertyWithValue("name", "Film1");
+    }
+
+    @Test
+    public void searchFilmsByTitleAndDirector_directorFlagON() {
+        var films = filmStorage.searchFilmsByTitleAndDirector("film", false, true);
+        assertThat(films).isNotNull();
+        assertThat(films.size()).isEqualTo(1);
+        assertThat(films.getFirst()).hasFieldOrPropertyWithValue("name", "Film2");
+    }
+
+    @Test
+    public void searchFilmsByTitleAndDirector_bothFlags() {
+        var films = filmStorage.searchFilmsByTitleAndDirector("film", true, true);
+        assertThat(films).isNotNull();
+        assertThat(films.size()).isEqualTo(3);
+        assertThat(films.getFirst()).hasFieldOrPropertyWithValue("name", "Film1");
+        assertThat(films.getLast()).hasFieldOrPropertyWithValue("name", "Film3");
+    }
+
+    public void testGetCommonFilmsSortedByPopularity() {
+        var commonFilms = filmStorage.getCommonFilmsSortedByPopularity(1, 2);
+
+        assertThat(commonFilms)
+                .isNotNull();
+
+        assertThat(commonFilms.get(0).getName()).isEqualTo("Film1");
+        assertThat(commonFilms.get(1).getName()).isEqualTo("Film2");
+    }
+
 }
