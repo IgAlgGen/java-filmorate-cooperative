@@ -17,7 +17,7 @@ import java.util.Objects;
 @Repository
 @RequiredArgsConstructor
 @Qualifier("feedDbStorage")
-public class FeedDbStorage implements FeedStorage{
+public class FeedDbStorage implements FeedStorage {
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final FeedRowMapper feedRowMapper;
 
