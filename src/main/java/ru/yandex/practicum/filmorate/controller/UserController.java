@@ -1,14 +1,15 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.FeedEvent;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.FeedService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.net.URI;
@@ -23,6 +24,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final FeedService feedService;
 
     @PostMapping
     public ResponseEntity<User> create(@Valid @RequestBody User user) {
@@ -50,13 +52,13 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getById(@PathVariable @Positive int id) {
+    public ResponseEntity<User> getById(@PathVariable int id) {
         log.info("Получение пользователя с ID {}", id);
         return ResponseEntity.ok(userService.getById(id));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable @Positive int id) {
+    public ResponseEntity<Void> delete(@PathVariable int id) {
         log.info("Удаление пользователя с ID {}", id);
         userService.delete(id);
         return ResponseEntity.noContent().build();
@@ -66,7 +68,7 @@ public class UserController {
      * Добавление в друзья.
      */
     @PutMapping("/{id}/friends/{friendId}")
-    public ResponseEntity<Void> addFriend(@PathVariable @Positive int id, @PathVariable @Positive int friendId) {
+    public ResponseEntity<Void> addFriend(@PathVariable int id, @PathVariable int friendId) {
         log.info("Пользователь с ID {} добавляет в друзья пользователя с ID {}", id, friendId);
         userService.addFriend(id, friendId);
         return ResponseEntity.ok().build();
@@ -76,7 +78,7 @@ public class UserController {
      * Удаление из друзей.
      */
     @DeleteMapping("/{id}/friends/{friendId}")
-    public ResponseEntity<Void> removeFriend(@PathVariable @Positive int id, @PathVariable @Positive int friendId) {
+    public ResponseEntity<Void> removeFriend(@PathVariable int id, @PathVariable int friendId) {
         log.info("Пользователь с ID {} удаляет из друзей пользователя с ID {}", id, friendId);
         userService.removeFriend(id, friendId);
         return ResponseEntity.ok().build();
@@ -86,7 +88,7 @@ public class UserController {
      * Возвращаем список пользователей, являющихся его друзьями.
      */
     @GetMapping("/{id}/friends")
-    public ResponseEntity<List<User>> getFriends(@PathVariable @Positive int id) {
+    public ResponseEntity<List<User>> getFriends(@PathVariable int id) {
         log.info("Получение списка друзей пользователя с ID {}", id);
         return ResponseEntity.ok(userService.getFriends(id));
     }
@@ -95,7 +97,7 @@ public class UserController {
      * Список друзей, общих с другим пользователем.
      */
     @GetMapping("/{id}/friends/common/{otherId}")
-    public ResponseEntity<List<User>> getCommonFriends(@PathVariable @Positive int id, @PathVariable @Positive int otherId) {
+    public ResponseEntity<List<User>> getCommonFriends(@PathVariable int id, @PathVariable int otherId) {
         log.info("Получение списка общих друзей между пользователями с ID {} и ID {}", id, otherId);
         return ResponseEntity.ok(userService.getCommonFriends(id, otherId));
     }
@@ -104,8 +106,18 @@ public class UserController {
      * Рекомендации фильмов для пользователя.
      */
     @GetMapping("/{id}/recommendations")
-    public ResponseEntity<List<Film>> getRecommendations(@PathVariable @Positive int id) {
+    public ResponseEntity<List<Film>> getRecommendations(@PathVariable int id) {
         log.info("Получение рекомендаций фильмов для пользователя с ID {}", id);
         return ResponseEntity.ok(userService.getRecommendations(id));
+    }
+
+    /**
+     * Лента событий для пользователя
+     */
+
+    @GetMapping("/{id}/feed")
+    public ResponseEntity<List<FeedEvent>> getFeed(@PathVariable int id) {
+        log.info("Получение ленты событий пользователя с ID {}", id);
+        return ResponseEntity.ok(feedService.getFeed(id));
     }
 }

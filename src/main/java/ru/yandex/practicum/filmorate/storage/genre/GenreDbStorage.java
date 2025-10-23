@@ -21,35 +21,17 @@ public class GenreDbStorage implements GenreStorage {
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final GenreRowMapper genreRowMapper;
 
-    private final String pGENREID = "id";
-    private final String pGENRENAME = "name";
-    private final String pFILMID = "filmId";
-
-    private static String par(String param) {
-        return ":" + param;
-    }
-
     @Override
     public List<Genre> findAll() {
-        final String sqlGenreSelectAll = """
-                SELECT g.id, g.name
-                FROM genres g
-                ORDER BY g.id
-                """;
-        return namedParameterJdbcTemplate.query(sqlGenreSelectAll, genreRowMapper);
+        return namedParameterJdbcTemplate.query(GenreQuery.SELECT_ALL.getSql(), genreRowMapper);
     }
 
     @Override
     public Optional<Genre> findById(int genreId) {
         assertGenreExists(genreId);
-        final String sqlGenreSelectById = """
-                SELECT g.id, g.name
-                FROM genres g
-                WHERE g.id = %s
-                """.formatted(par(pGENREID));
-        MapSqlParameterSource params = new MapSqlParameterSource().addValue(pGENREID, genreId);
+        MapSqlParameterSource params = new MapSqlParameterSource().addValue("id", genreId);
         try {
-            return Optional.ofNullable(namedParameterJdbcTemplate.queryForObject(sqlGenreSelectById, params, genreRowMapper));
+            return Optional.ofNullable(namedParameterJdbcTemplate.queryForObject(GenreQuery.SELECT_BY_ID.getSql(), params, genreRowMapper));
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
@@ -58,13 +40,10 @@ public class GenreDbStorage implements GenreStorage {
     @Override
     @Transactional
     public Genre create(Genre genre) {
-        final String sqlGenreInsert = """
-                INSERT INTO genres (id, name) VALUES (%s, %s)
-                """.formatted(par(pGENREID), par(pGENRENAME));
         MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue(pGENREID, genre.getId())
-                .addValue(pGENRENAME, genre.getName());
-        namedParameterJdbcTemplate.update(sqlGenreInsert, params);
+                .addValue("id", genre.getId())
+                .addValue("name", genre.getName());
+        namedParameterJdbcTemplate.update(GenreQuery.INSERT.getSql(), params);
         return genre;
     }
 
@@ -72,39 +51,28 @@ public class GenreDbStorage implements GenreStorage {
     @Transactional
     public Genre update(Genre genre) {
         assertGenreExists(genre.getId());
-        final String sqlGenreUpdate = """
-                UPDATE genres SET name = :name WHERE id = %s
-                """.formatted(par(pGENREID));
         MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue(pGENREID, genre.getId())
-                .addValue(pGENRENAME, genre.getName());
-        namedParameterJdbcTemplate.update(sqlGenreUpdate, params);
+                .addValue("id", genre.getId())
+                .addValue("name", genre.getName());
+        namedParameterJdbcTemplate.update(GenreQuery.UPDATE.getSql(), params);
         return genre;
     }
 
     @Override
     @Transactional
     public boolean deleteById(int genreId) {
-        final String sqlGenreDelete = """
-                DELETE FROM genres WHERE id = %s
-                """.formatted(par(pGENREID));
-        MapSqlParameterSource params = new MapSqlParameterSource().addValue(pGENREID, genreId);
-        int deleted = namedParameterJdbcTemplate.update(sqlGenreDelete, params);
+        MapSqlParameterSource params = new MapSqlParameterSource().addValue("id", genreId);
+        int deleted = namedParameterJdbcTemplate.update(GenreQuery.DELETE_BY_ID.getSql(), params);
         return deleted > 0;
     }
 
     @Override
     @Transactional
     public void renewGenres(int filmId, Set<Genre> genres) {
-        final String sqlGenreDeleteByFilmId = """
-                DELETE FROM film_genres WHERE film_id = %s
-                """.formatted(par(pFILMID));
-        final String sqlGenreInsertByFilmId = """
-                INSERT INTO film_genres (film_id, genre_id) VALUES (%s, %s)
-                """.formatted(par(pFILMID), par(pGENREID));
         // стереть старые связи
-        MapSqlParameterSource params = new MapSqlParameterSource().addValue(pFILMID, filmId);
-        namedParameterJdbcTemplate.update(sqlGenreDeleteByFilmId, params);
+        MapSqlParameterSource params = new MapSqlParameterSource().addValue("filmId", filmId);
+        namedParameterJdbcTemplate.update(GenreQuery.DELETE_BY_FILM_ID.getSql(), params);
+
         // добавить новые связи
         if (genres == null || genres.isEmpty()) return;
         // убрать возможные дубли по id
@@ -114,22 +82,15 @@ public class GenreDbStorage implements GenreStorage {
                 .sorted()
                 .toList();
         SqlParameterSource[] batch = ids.stream()
-                .map(gid -> new MapSqlParameterSource().addValue(pFILMID, filmId).addValue(pGENREID, gid))
+                .map(gid -> new MapSqlParameterSource().addValue("filmId", filmId).addValue("id", gid))
                 .toArray(SqlParameterSource[]::new);
-        namedParameterJdbcTemplate.batchUpdate(sqlGenreInsertByFilmId, batch);
+        namedParameterJdbcTemplate.batchUpdate(GenreQuery.INSERT_BY_FILM_ID.getSql(), batch);
     }
 
     @Override
     public Set<Genre> findByFilmId(int filmId) {
-        final String sqlGenreSelectByFilmId = """
-                SELECT g.id, g.name
-                FROM genres g
-                JOIN film_genres fg ON fg.genre_id = g.id
-                WHERE fg.film_id = %s
-                ORDER BY g.id
-                """.formatted(par(pFILMID));
-        MapSqlParameterSource params = new MapSqlParameterSource().addValue(pFILMID, filmId);
-        return new LinkedHashSet<>(namedParameterJdbcTemplate.query(sqlGenreSelectByFilmId, params, genreRowMapper));
+        MapSqlParameterSource params = new MapSqlParameterSource().addValue("filmId", filmId);
+        return new LinkedHashSet<>(namedParameterJdbcTemplate.query(GenreQuery.SELECT_BY_FILM_ID.getSql(), params, genreRowMapper));
     }
 
     @Override
@@ -141,6 +102,7 @@ public class GenreDbStorage implements GenreStorage {
                 .filter(id -> id != null && id > 0)
                 .collect(toSet());
         if (ids.isEmpty()) return;
+
         final String sqlSelectExistingIds =
                 "SELECT id FROM genres WHERE id IN (:ids)";
         List<Integer> found = namedParameterJdbcTemplate.queryForList(
@@ -159,9 +121,9 @@ public class GenreDbStorage implements GenreStorage {
     @Override
     public void assertGenreExists(int id) {
     String sqlGenreExists = """
-                SELECT EXISTS(SELECT 1 FROM genres WHERE id = %s)
-                """.formatted(par(pGENREID));
-        MapSqlParameterSource params = new MapSqlParameterSource().addValue(pGENREID, id);
+                SELECT EXISTS(SELECT 1 FROM genres WHERE id = :id)
+                """;
+        MapSqlParameterSource params = new MapSqlParameterSource().addValue("id", id);
         Boolean exists = namedParameterJdbcTemplate.queryForObject(sqlGenreExists, params, Boolean.class);
         if (exists == null || !exists) {
             throw new NotFoundException("Жанр с ID " + id + " не найден.");

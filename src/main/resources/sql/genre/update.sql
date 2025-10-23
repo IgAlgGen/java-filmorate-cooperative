@@ -1,0 +1,1 @@
+UPDATE genres SET name = :name WHERE id = :id;

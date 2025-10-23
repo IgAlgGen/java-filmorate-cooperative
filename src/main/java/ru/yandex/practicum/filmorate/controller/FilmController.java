@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -52,7 +51,7 @@ public class FilmController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable @Positive int id) {
+    public ResponseEntity<Void> delete(@PathVariable int id) {
         log.info("Удаление фильма с ID {}", id);
         filmService.delete(id);
         return ResponseEntity.noContent().build();
@@ -62,7 +61,7 @@ public class FilmController {
      * Пользователь ставит лайк фильму
      */
     @PutMapping("/{id}/like/{userId}")
-    public ResponseEntity<Void> addLike(@PathVariable @Positive int id, @PathVariable @Positive int userId) {
+    public ResponseEntity<Void> addLike(@PathVariable int id, @PathVariable int userId) {
         log.info("Пользователь с ID {} ставит лайк фильму с ID {}", userId, id);
         filmService.addLike(id, userId);
         return ResponseEntity.ok().build();
@@ -72,7 +71,7 @@ public class FilmController {
      * Пользователь удаляет лайк.
      */
     @DeleteMapping("/{id}/like/{userId}")
-    public ResponseEntity<Void> removeLike(@PathVariable @Positive int id, @PathVariable @Positive int userId) {
+    public ResponseEntity<Void> removeLike(@PathVariable int id, @PathVariable int userId) {
         log.info("Пользователь с ID {} удаляет лайк к фильму с ID {}", userId, id);
         filmService.removeLike(id, userId);
         return ResponseEntity.ok().build();
@@ -84,7 +83,7 @@ public class FilmController {
      */
     @GetMapping("/popular")
     public ResponseEntity<List<Film>> getPopular(
-            @RequestParam(defaultValue = "10") @Positive int count,
+            @RequestParam(defaultValue = "10") int count,
             @RequestParam(required = false) Long genreId,
             @RequestParam(required = false) Integer year) {
         log.info("Получение популярных фильмов, количество: {}", count);
@@ -119,8 +118,8 @@ public class FilmController {
     }
 
     @GetMapping("/common")
-    public ResponseEntity<List<Film>> getCommonFilms(@RequestParam @Positive int userId,
-                                                     @RequestParam @Positive int friendId) {
+    public ResponseEntity<List<Film>> getCommonFilms(@RequestParam int userId,
+                                                     @RequestParam int friendId) {
         log.info("Получение общих фильмов: {}, {}", userId, friendId);
         return ResponseEntity.ok(filmService.getCommonFilms(userId, friendId));
     }
