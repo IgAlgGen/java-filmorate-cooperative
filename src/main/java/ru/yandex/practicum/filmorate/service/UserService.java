@@ -4,13 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.service.utils.FilmRecommendationData;
+import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.filmLike.FilmLikeStorage;
 import ru.yandex.practicum.filmorate.storage.friendship.FriendshipStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,6 +29,9 @@ public class UserService {
 
     @Qualifier("filmLikeDbStorage")
     private final FilmLikeStorage filmLikeStorage;
+
+    @Qualifier("feedDbStorage")
+    private final FeedStorage feedStorage;
 
     private final FilmService filmService;
 
@@ -51,7 +56,7 @@ public class UserService {
 
     public User getById(int id) {
         log.debug("Поиск пользователя по ID {}", id);
-        User user = userStorage.getById(id).orElseThrow();
+        User user = userStorage.getById(id).orElseThrow(() -> new NotFoundException("Пользователь с ID " + id + " не найден"));
         log.debug("Найден пользователь: id={}, login='{}'", user.getId(), user.getLogin());
         return user;
     }
@@ -72,14 +77,16 @@ public class UserService {
     public void addFriend(int userId, int friendId) {
         log.debug("Пользователь с ID {} добавляет в друзья пользователя с ID {}", userId, friendId);
         friendshipStorage.addFriend(userId, friendId);
-        log.debug("Пользователь с ID {} добавил в друзья пользователя с ID {}", userId, friendId);
+        addToFeed(userId, friendId,EventType.FRIEND, Operation.ADD);
+        log.debug("Пользователь с ID {} добавил в друзья пользователя с ID {} (событие добавлено в ленту)", userId, friendId);
     }
 
     public void removeFriend(int userId, int friendId) {
         log.debug("Пользователь с ID {} удаляет из друзей пользователя с ID {}", userId, friendId);
         // (опционально) checkUserExistence(userId); checkUserExistence(friendId)
         friendshipStorage.removeFriend(userId, friendId);
-        log.debug("Пользователь с ID {} удалил из друзей пользователя с ID {}", userId, friendId);
+        addToFeed(userId, friendId, EventType.FRIEND, Operation.REMOVE);
+        log.debug("Пользователь с ID {} удалил из друзей пользователя с ID {} (событие добавлено в ленту)", userId, friendId);
     }
 
     public List<User> getFriends(int userId) {
@@ -148,5 +155,15 @@ public class UserService {
         return filmsUserDoesNotHave.stream()
                 .map(filmService::getById)
                 .toList();
+    }
+
+    private void addToFeed(int userId, int entityId, EventType type, Operation op) {
+        FeedEvent event = new FeedEvent();
+        event.setUserId(userId);
+        event.setEntityId(entityId);
+        event.setEventType(type);
+        event.setOperation(op);
+        event.setTimestamp(Instant.now().toEpochMilli());
+        feedStorage.addEvent(event);
     }
 }

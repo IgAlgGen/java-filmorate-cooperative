@@ -4,15 +4,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
+import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.filmLike.FilmLikeStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MpaDbStorage;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 
@@ -36,6 +37,9 @@ public class FilmService {
     @Qualifier("directorDbStorage")
     private final DirectorStorage directorStorage;
 
+    @Qualifier("feedDbStorage")
+    private final FeedStorage feedStorage;
+
     public Film create(Film f) {
         log.debug("Создание фильма: name='{}', releaseDate={}, duration={}", f.getName(), f.getReleaseDate(), f.getDuration());
         genreStorage.assertGenresExists(f.getGenres());
@@ -53,6 +57,8 @@ public class FilmService {
 
     public Film update(Film f) {
         log.debug("Обновление фильма: id={}, name='{}'", f.getId(), f.getName());
+        filmStorage.getById(f.getId())
+                .orElseThrow(() -> new NotFoundException("Фильм с ID " + f.getId() + " не найден"));
         genreStorage.assertGenresExists(f.getGenres());
         mpaStorage.assertMpaExists(f.getMpa().getId());
         Film updatedFilm = filmStorage.update(f);
@@ -68,7 +74,7 @@ public class FilmService {
 
     public Film getById(int id) {
         log.debug("Поиск фильма по ID {}", id);
-        Film film = filmStorage.getById(id).orElseThrow();
+        Film film = filmStorage.getById(id).orElseThrow(() -> new NotFoundException("Пользователь с ID " + id + " не найден"));
         log.debug("Загрузка жанров для фильма с ID {}: {}", film.getId(), film.getGenres());
         Set<Genre> genreSet = genreStorage.findByFilmId(id);
         film.setGenres(genreSet);
@@ -105,13 +111,15 @@ public class FilmService {
     public void addLike(int filmId, int userId) {
         log.debug("Пользователь с ID {} ставит лайк фильму с ID {}", userId, filmId);
         likeStorage.addLike((int) filmId, (int) userId);
-        log.debug("Пользователь с ID {} поставил лайк фильму с ID {}", userId, filmId);
+        addToFeed(userId, filmId, EventType.LIKE, Operation.ADD);
+        log.debug("Пользователь с ID {} поставил лайк фильму с ID {} (событие добавлено в ленту)", userId, filmId);
     }
 
     public void removeLike(int filmId, int userId) {
         log.debug("Пользователь с ID {} удаляет лайк у фильма с ID {}", userId, filmId);
         likeStorage.removeLike(filmId, userId);
-        log.debug("Пользователь с ID {} удалил лайк у фильма с ID {}", userId, filmId);
+        addToFeed(userId, filmId, EventType.LIKE, Operation.REMOVE);
+        log.debug("Пользователь с ID {} удалил лайк у фильма с ID {} (событие добавлено в ленту)", userId, filmId);
     }
 
     public List<Film> getPopular(int count, Long genreId, Integer year) {
@@ -120,6 +128,7 @@ public class FilmService {
         log.debug("Найдено {} популярных фильмов", popularFilms.size());
         for (Film film : popularFilms) {
             film.setGenres(genreStorage.findByFilmId(film.getId()));
+            film.setDirectors(directorStorage.getDirectorsByFilmId(film.getId()));
         }
         log.debug("Возвращено {} популярных фильмов", popularFilms.size());
         return popularFilms;
@@ -149,6 +158,9 @@ public class FilmService {
      */
     public List<Film> getByDirectorSorted(int directorId, String sortBy) {
         log.debug("Поиск фильмов режиссера с ID {} с сортировкой по '{}'", directorId, sortBy);
+        directorStorage.getById(directorId)
+                .orElseThrow(() -> new NotFoundException(
+                        String.format("Режиссёр с ID %d не найден", directorId)));
         List<Film> films = filmStorage.findByDirectorSorted(directorId, sortBy);
         films.forEach(f -> {
             f.setDirectors(directorStorage.getDirectorsByFilmId(f.getId()));
@@ -177,5 +189,15 @@ public class FilmService {
         });
         log.debug("Найдено {} фильмов по запросу '{}' в полях: {}", films.size(), query, by);
         return films;
+    }
+
+    private void addToFeed(int userId, int entityId, EventType type, Operation op) {
+        FeedEvent event = new FeedEvent();
+        event.setUserId(userId);
+        event.setEntityId(entityId);
+        event.setEventType(type);
+        event.setOperation(op);
+        event.setTimestamp(Instant.now().toEpochMilli());
+        feedStorage.addEvent(event);
     }
 }
