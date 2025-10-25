@@ -1,1 +1,0 @@
-INSERT INTO directors (name) VALUES (:name);

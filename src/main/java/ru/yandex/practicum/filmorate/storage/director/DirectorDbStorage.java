@@ -97,15 +97,6 @@ public class DirectorDbStorage implements DirectorStorage {
         MapSqlParameterSource params = new MapSqlParameterSource(pFILMID, filmId);
         for (Director d : directors) params.addValue(pDIRID + d.getId(), d.getId());
         namedParameterJdbcTemplate.update(sql, params);
-        /* вставить новые - вариант с batchUpdate (оставлю тут, может пригодится)
-        String sql = "INSERT INTO film_directors (film_id, director_id) VALUES (:filmId, :directorId)";
-        List<MapSqlParameterSource> batch = directors.stream()
-            .map(d -> new MapSqlParameterSource()
-            .addValue("filmId", filmId)
-            .addValue("directorId", d.getId()))
-            .toList();
-        namedParameterJdbcTemplate.batchUpdate(sql, batch.toArray(MapSqlParameterSource[]::new));
-         */
     }
 
     @Override

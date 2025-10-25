@@ -1,1 +1,0 @@
-UPDATE directors SET name=:name WHERE id=:id;

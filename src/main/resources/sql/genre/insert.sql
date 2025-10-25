@@ -1,1 +1,0 @@
-INSERT INTO genres (id, name) VALUES (:id, :name);

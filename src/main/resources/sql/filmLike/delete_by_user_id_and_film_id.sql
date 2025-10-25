@@ -1,1 +1,0 @@
-DELETE FROM film_likes WHERE film_id = :filmId AND user_id = userId;

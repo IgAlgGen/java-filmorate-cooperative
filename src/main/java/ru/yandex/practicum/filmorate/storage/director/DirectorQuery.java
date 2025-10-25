@@ -4,28 +4,26 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public enum DirectorQuery {
-    INSERT("src/main/resources/sql/director/insert.sql"),
-    UPDATE("src/main/resources/sql/director/update.sql"),
-    SELECT_BY_ID("src/main/resources/sql/director/select_by_id.sql"),
-    SELECT_ALL("src/main/resources/sql/director/select_all.sql"),
-    SELECT_BY_FILM_ID("src/main/resources/sql/director/select_by_film_id.sql"),
-    DELETE_BY_ID("src/main/resources/sql/director/delete_by_id.sql");
+    INSERT("INSERT INTO directors (name) VALUES (:name);"),
+    UPDATE("UPDATE directors SET name=:name WHERE id=:id;"),
+    SELECT_BY_ID("SELECT id, name FROM directors WHERE id=:id;"),
+    SELECT_ALL("SELECT id, name FROM directors ORDER BY id;"),
+    SELECT_BY_FILM_ID("""
+            SELECT d.id, d.name
+            FROM directors d
+            JOIN film_directors fd ON fd.director_id = d.id
+            WHERE fd.film_id = :filmId
+            ORDER BY d.id;"""),
+    DELETE_BY_ID("DELETE FROM directors WHERE id=:id;");
+
 
     private final String sql;
 
-    DirectorQuery(String queryPath) {
-        this.sql = loadSql(queryPath);
+    DirectorQuery(String sql) {
+        this.sql = sql;
     }
 
     public String getSql() {
         return sql;
-    }
-
-    private String loadSql(String path) {
-        try {
-            return Files.readString(Path.of(path));
-        } catch (java.io.IOException | NullPointerException e) {
-            throw new IllegalStateException("Не удалось загрузить SQL-файл: " + path, e);
-        }
     }
 }
