@@ -37,13 +37,9 @@ public class UserDbStorage implements UserStorage {
     @Override
     @Transactional
     public User create(User user) {
-        final String sqlUserInsert = """
-                INSERT INTO users (email, login, name, birthday)
-                VALUES (%s, %s, %s, %s)
-                """.formatted(par(pEMAIL), par(pLOGIN), par(pNAME), par(pBIRTHDAY));
         SqlParameterSource params = new BeanPropertySqlParameterSource(user);
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        namedParameterJdbcTemplate.update(sqlUserInsert, params, keyHolder, new String[]{pID});
+        namedParameterJdbcTemplate.update(UserQuery.INSERT.getSql(), params, keyHolder, new String[]{"id"});
         Number key = keyHolder.getKey();
         user.setId(Objects.requireNonNull(key).intValue());
         return user;
@@ -52,12 +48,8 @@ public class UserDbStorage implements UserStorage {
     @Override
     @Transactional
     public User update(User user) {
-        final String sqlUserUpdate = """
-                UPDATE users SET email = %s, login = %s, name = %s, birthday = %s
-                WHERE id = %s
-                """.formatted(par(pEMAIL), par(pLOGIN), par(pNAME), par(pBIRTHDAY), par(pID));
         SqlParameterSource params = new BeanPropertySqlParameterSource(user);
-        int updated = namedParameterJdbcTemplate.update(sqlUserUpdate, params);
+        int updated = namedParameterJdbcTemplate.update(UserQuery.UPDATE.getSql(), params);
         if (updated == 0) {
             throw new NotFoundException("User not found: id=" + user.getId());
         }
@@ -66,14 +58,9 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public Optional<User> getById(int id) {
-        final String sqlUserSelectById = """
-                SELECT u.id, u.email, u.login, u.name, u.birthday
-                FROM users u
-                WHERE u.id = %s
-                """.formatted(par(pID));
         try {
-            return Optional.ofNullable(namedParameterJdbcTemplate.queryForObject(sqlUserSelectById,
-                    new MapSqlParameterSource(pID, id), userRowMapper));
+            return Optional.ofNullable(namedParameterJdbcTemplate.queryForObject(UserQuery.SELECT_BY_ID.getSql(),
+                    new MapSqlParameterSource("id", id), userRowMapper));
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
@@ -81,21 +68,13 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getAll() {
-        final String sqlUserSelectAll = """
-                SELECT u.id, u.email, u.login, u.name, u.birthday
-                FROM users u
-                ORDER BY u.id
-                """;
-        return namedParameterJdbcTemplate.query(sqlUserSelectAll, userRowMapper);
+        return namedParameterJdbcTemplate.query(UserQuery.SELECT_ALL.getSql(), userRowMapper);
     }
 
     @Override
     @Transactional
     public boolean deleteById(int id) {
-        final String sqlUserDelete = """
-                DELETE FROM users WHERE id = %s
-                """.formatted(par(pID));
-        return namedParameterJdbcTemplate.update(sqlUserDelete,
+        return namedParameterJdbcTemplate.update(UserQuery.DELETE_BY_ID.getSql(),
                 new MapSqlParameterSource(pID, id)) > 0;
     }
 }
