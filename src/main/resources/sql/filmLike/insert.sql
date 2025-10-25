@@ -1,0 +1,1 @@
+MERGE INTO film_likes (film_id, user_id) KEY (film_id, user_id) VALUES (:filmId, :userId);
