@@ -24,10 +24,6 @@ public class FeedDbStorage implements FeedStorage {
     @Override
     @Transactional
     public void addEvent(FeedEvent event) {
-        String sql = """
-                INSERT INTO feed_events (timestamp, user_id, event_type, operation, entity_id)
-                VALUES (:timestamp, :user_id, :event_type, :operation, :entity_id)
-                """;
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("timestamp", new Timestamp(event.getTimestamp()))
                 .addValue("user_id", event.getUserId())
@@ -36,20 +32,14 @@ public class FeedDbStorage implements FeedStorage {
                 .addValue("entity_id", event.getEntityId());
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        namedParameterJdbcTemplate.update(sql, params, keyHolder, new String[]{"event_id"});
+        namedParameterJdbcTemplate.update(FeedQuery.INSERT.getSql(), params, keyHolder, new String[]{"event_id"});
         Number key = keyHolder.getKey();
         event.setEventId(Objects.requireNonNull(key).longValue());
     }
 
     @Override
     public List<FeedEvent> findByUserId(int userId) {
-        final String sqlFeedSelectById = """
-                SELECT fe.event_id, fe.timestamp, fe.user_id, fe.event_type, fe.operation, fe.entity_id
-                FROM feed_events fe
-                WHERE fe.user_id = :user_id
-                ORDER BY fe.timestamp
-                """;
-            return namedParameterJdbcTemplate.query(sqlFeedSelectById,
+            return namedParameterJdbcTemplate.query(FeedQuery.SELECT_BY_USER_ID.getSql(),
                     new MapSqlParameterSource("user_id", userId), feedRowMapper);
     }
 }

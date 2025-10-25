@@ -1,30 +1,66 @@
 package ru.yandex.practicum.filmorate.storage.review;
 
 public enum ReviewQuery {
-    CREATE_REVIEW("sql/review/create_review.sql"),
-    UPDATE_REVIEW("sql/review/update_review.sql"),
-    DELETE_REVIEW("sql/review/delete_review.sql"),
-    GET_REVIEW_BY_ID("sql/review/get_review_by_id.sql"),
-    GET_ALL_REVIEWS("sql/review/get_all_reviews.sql"),
-    GET_REVIEWS_BY_FILM_ID("sql/review/get_reviews_by_film_id.sql"),
-    ADD_REVIEW_LIKE("sql/review/add_review_like.sql"),
-    REMOVE_REVIEW_LIKE("sql/review/remove_review_like.sql");
+    CREATE_REVIEW("""
+            INSERT INTO reviews (content, film_Id, user_Id, is_positive)
+            VALUES (:content, :filmId, :userId, :isPositive)
+            """),
+    UPDATE_REVIEW("""
+            UPDATE reviews
+            SET content = :content, is_positive = :isPositive
+            WHERE id = :reviewId
+            """),
+    DELETE_REVIEW("DELETE FROM reviews WHERE id = :reviewId"),
+    GET_REVIEW_BY_ID("""
+                SELECT r.id, r.content, r.user_id, r.film_id, r.is_positive,
+                COUNT(CASE WHEN l.is_like = TRUE THEN 1 END) AS positive_likes_count,
+                COUNT(CASE WHEN l.is_like = FALSE THEN 1 END) AS negative_likes_count
+                FROM reviews r
+                LEFT JOIN reviews_likes l ON r.id = l.review_id
+                WHERE r.id = :reviewId
+                GROUP BY r.id, r.content, r.user_id, r.film_id;
+                """),
+    GET_REVIEWS_BY_FILM_ID("""
+                SELECT r.id, r.content, r.user_id, r.film_id, r.is_positive,
+                COUNT(CASE WHEN l.is_like = TRUE  THEN 1 END) AS positive_likes_count,
+                COUNT(CASE WHEN l.is_like = FALSE THEN 1 END) AS negative_likes_count,
+                (COUNT(CASE WHEN l.is_like = TRUE  THEN 1 END) -
+                COUNT(CASE WHEN l.is_like = FALSE THEN 1 END)) AS rating_score
+                FROM reviews r
+                LEFT JOIN reviews_likes l ON r.id = l.review_id
+                WHERE r.film_id = :filmId
+                GROUP BY r.id, r.content, r.user_id, r.film_id
+                ORDER BY rating_score DESC, r.id ASC
+                LIMIT :count;
+                """),
+    GET_ALL_REVIEWS("""
+                SELECT r.id, r.content, r.user_id, r.film_id, r.is_positive,
+                COUNT(CASE WHEN l.is_like = TRUE  THEN 1 END) AS positive_likes_count,
+                COUNT(CASE WHEN l.is_like = FALSE THEN 1 END) AS negative_likes_count,
+                (COUNT(CASE WHEN l.is_like = TRUE  THEN 1 END) -
+                COUNT(CASE WHEN l.is_like = FALSE THEN 1 END)) AS rating_score
+                FROM reviews r
+                LEFT JOIN reviews_likes l ON r.id = l.review_id
+                GROUP BY r.id, r.content, r.user_id, r.film_id
+                ORDER BY rating_score DESC, r.id ASC
+                LIMIT :count;
+                """),
+    ADD_REVIEW_LIKE("""
+                INSERT INTO reviews_likes (review_Id, user_id, is_like)
+                VALUES (:reviewId, :userId, :isPositive)
+                """),
+    REMOVE_REVIEW_LIKE("""
+                DELETE FROM reviews_likes
+                WHERE review_id = :reviewId AND user_id = :userId
+                """);
 
     private final String sql;
 
-    ReviewQuery(String queryPath) {
-        this.sql = loadSql(queryPath);
+    ReviewQuery(String sql) {
+        this.sql = sql;
     }
 
     public String getSql() {
         return sql;
-    }
-
-    private String loadSql(String path) {
-        try {
-            return java.nio.file.Files.readString(java.nio.file.Path.of(path));
-        } catch (java.io.IOException | NullPointerException e) {
-            throw new IllegalStateException("Не удалось загрузить SQL-файл: " + path, e);
-        }
     }
 }

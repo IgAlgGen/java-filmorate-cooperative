@@ -25,12 +25,7 @@ public class MpaDbStorage implements MpaStorage {
 
     @Override
     public List<MpaRating> findAll() {
-        final String sqlMpaSelectAll = """
-                SELECT m.id, m.name
-                FROM mpa_ratings m
-                ORDER BY m.id
-                """;
-        return namedParameterJdbcTemplate.query(sqlMpaSelectAll, mpaRowMapper);
+        return namedParameterJdbcTemplate.query(MpaQuery.SELECT_ALL.getSql(), mpaRowMapper);
     }
 
     @Override
@@ -39,19 +34,19 @@ public class MpaDbStorage implements MpaStorage {
         final String sqlMpaSelectById = """
                 SELECT m.id, m.name
                 FROM mpa_ratings m
-                WHERE m.id = %s
+                WHERE m.id = :id
                 """.formatted(par(pID));
         MapSqlParameterSource params = new MapSqlParameterSource();
-        params.addValue(pID, id);
-        return Optional.ofNullable(namedParameterJdbcTemplate.queryForObject(sqlMpaSelectById, params, mpaRowMapper));
+        params.addValue("id", id);
+        return Optional.ofNullable(namedParameterJdbcTemplate.queryForObject(MpaQuery.SELECT_BY_ID.getSql(), params, mpaRowMapper));
     }
 
     @Override
     public void assertMpaExists(int id) {
         final String sqlMpaExists = """
-                SELECT EXISTS(SELECT 1 FROM mpa_ratings WHERE id = %s)
-                """.formatted(par(pID));
-        MapSqlParameterSource params = new MapSqlParameterSource().addValue(pID, id);
+                SELECT EXISTS(SELECT 1 FROM mpa_ratings WHERE id = :id)
+                """;
+        MapSqlParameterSource params = new MapSqlParameterSource().addValue("id", id);
         Boolean exists = namedParameterJdbcTemplate.queryForObject(sqlMpaExists, params, Boolean.class);
         if (exists == null || !exists) {
             throw new NotFoundException("MPA рейтинг с ID " + id + " не найден.");

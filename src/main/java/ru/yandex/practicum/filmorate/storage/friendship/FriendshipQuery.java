@@ -1,32 +1,45 @@
 package ru.yandex.practicum.filmorate.storage.friendship;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 public enum FriendshipQuery {
-    INSERT("src/main/resources/sql/friendship/insert.sql"),
-    UPDATE_BOTH_CONFIRMED("src/main/resources/sql/friendship/update_both_confirmed.sql"),
-    DELETE("src/main/resources/sql/friendship/delete.sql"),
-    UPDATE("src/main/resources/sql/friendship/update.sql"),
-    SELECT_COMMON_FRIENDS("src/main/resources/sql/friendship/select_common_friends.sql"),
-    SELECT_FRIENDS_BY_USER_ID("src/main/resources/sql/friendship/select_friends_by_user_id.sql");
-
+    INSERT("""
+                MERGE INTO friendships (requester_id, addressee_id, status)
+                KEY (requester_id, addressee_id) VALUES (:userId, :friendId, :status)
+                """),
+    UPDATE_BOTH_CONFIRMED("""
+                UPDATE friendships SET status = :status
+                WHERE (requester_id = :userId AND addressee_id = :friendId) OR (requester_id = :friendId AND addressee_id = :userId)
+                """),
+    DELETE("""
+                DELETE FROM friendships
+                WHERE requester_id = :userId AND addressee_id = :friendId
+                """),
+    UPDATE("""
+                UPDATE friendships SET status = :status
+                WHERE requester_id = :userId AND addressee_id = :friendId
+                """),
+    SELECT_FRIENDS_BY_USER_ID("""
+                SELECT u.id, u.email, u.login, u.name, u.birthday
+                FROM friendships f
+                JOIN users u ON u.id = f.addressee_id
+                WHERE f.requester_id = :userId
+                ORDER BY u.id
+                """),
+    SELECT_COMMON_FRIENDS("""
+                SELECT u.id, u.email, u.login, u.name, u.birthday
+                FROM friendships f1
+                JOIN friendships f2 ON f1.addressee_id = f2.addressee_id
+                JOIN users u ON u.id = f1.addressee_id
+                WHERE f1.requester_id = :userId AND f2.requester_id = :friendId
+                ORDER BY u.id
+                """);
 
     private final String sql;
 
-    FriendshipQuery(String queryPath) {
-        this.sql = loadSql(queryPath);
+    FriendshipQuery(String sql) {
+        this.sql = sql;
     }
 
     public String getSql() {
         return sql;
-    }
-
-    private String loadSql(String path) {
-        try {
-            return Files.readString(Path.of(path));
-        } catch (java.io.IOException | NullPointerException e) {
-            throw new IllegalStateException("Не удалось загрузить SQL-файл: " + path, e);
-        }
     }
 }

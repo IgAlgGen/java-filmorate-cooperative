@@ -1,33 +1,46 @@
 package ru.yandex.practicum.filmorate.storage.genre;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 public enum GenreQuery {
-    SELECT_ALL("src/main/resources/sql/genre/select_all.sql"),
-    SELECT_BY_ID("src/main/resources/sql/genre/select_by_id.sql"),
-    INSERT("src/main/resources/sql/genre/insert.sql"),
-    UPDATE("src/main/resources/sql/genre/update.sql"),
-    DELETE_BY_ID("src/main/resources/sql/genre/delete_by_id.sql"),
-    DELETE_BY_FILM_ID("src/main/resources/sql/genre/delete_by_film_id.sql"),
-    INSERT_BY_FILM_ID("src/main/resources/sql/genre/insert_by_film_id.sql"),
-    SELECT_BY_FILM_ID("src/main/resources/sql/genre/select_by_film_id.sql");
+    SELECT_ALL("""
+            SELECT g.id, g.name
+            FROM genres g
+            ORDER BY g.id
+            """),
+    SELECT_BY_ID("""
+            SELECT g.id, g.name
+            FROM genres g
+            WHERE g.id = :id
+            """),
+    INSERT("""
+            INSERT INTO genres (id, name) VALUES (:id, :name)
+            """),
+    UPDATE("""
+            UPDATE genres SET name = :name WHERE id = :id
+            """),
+    DELETE_BY_ID("""
+            DELETE FROM genres WHERE id = :id
+            """),
+    DELETE_BY_FILM_ID("""
+            DELETE FROM film_genres WHERE film_id = :filmId
+            """),
+    INSERT_BY_FILM_ID("""
+            INSERT INTO film_genres (film_id, genre_id) VALUES (:filmId, :id)
+            """),
+    SELECT_BY_FILM_ID("""
+            SELECT g.id, g.name
+            FROM genres g
+            JOIN film_genres fg ON fg.genre_id = g.id
+            WHERE fg.film_id = :filmId
+            ORDER BY g.id
+            """);
 
     private final String sql;
 
-    GenreQuery(String queryPath) {
-        this.sql = loadSql(queryPath);
+    GenreQuery(String sql) {
+        this.sql = sql;
     }
 
     public String getSql() {
         return sql;
-    }
-
-    private String loadSql(String path) {
-        try {
-            return Files.readString(Path.of(path));
-        } catch (java.io.IOException | NullPointerException e) {
-            throw new IllegalStateException("Не удалось загрузить SQL-файл: " + path, e);
-        }
     }
 }

@@ -1,27 +1,24 @@
 package ru.yandex.practicum.filmorate.storage.mpa;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 public enum MpaQuery {
-    SELECT_ALL("src/main/resources/sql/mpa/select_all.sql"),
-    SELECT_BY_ID("src/main/resources/sql/mpa/select_by_id.sql");
+    SELECT_ALL("""
+            SELECT m.id, m.name
+            FROM mpa_ratings m
+            ORDER BY m.id
+            """),
+    SELECT_BY_ID("""
+            SELECT m.id, m.name
+            FROM mpa_ratings m
+            WHERE m.id = :id
+            """);
 
     private final String sql;
 
-    MpaQuery(String queryPath) {
-        this.sql = loadSql(queryPath);
+    MpaQuery(String sql) {
+        this.sql = sql;
     }
 
     public String getSql() {
         return sql;
-    }
-
-    private String loadSql(String path) {
-        try {
-            return Files.readString(Path.of(path));
-        } catch (java.io.IOException | NullPointerException e) {
-            throw new IllegalStateException("Не удалось загрузить SQL-файл: " + path, e);
-        }
     }
 }

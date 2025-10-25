@@ -13,7 +13,6 @@ public enum DirectorQuery {
             ORDER BY d.id;"""),
     DELETE_BY_ID("DELETE FROM directors WHERE id = :id;");
 
-
     private final String sql;
 
     DirectorQuery(String sql) {
