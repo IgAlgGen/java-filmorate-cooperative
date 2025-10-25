@@ -13,7 +13,6 @@ public enum GenreQuery {
     INSERT_BY_FILM_ID("src/main/resources/sql/genre/insert_by_film_id.sql"),
     SELECT_BY_FILM_ID("src/main/resources/sql/genre/select_by_film_id.sql");
 
-
     private final String sql;
 
     GenreQuery(String queryPath) {
