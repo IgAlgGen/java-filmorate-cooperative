@@ -20,10 +20,10 @@ public enum ReviewQuery {
         return sql;
     }
 
-    private String loadSql(String path){
-        try{
+    private String loadSql(String path) {
+        try {
             return java.nio.file.Files.readString(java.nio.file.Path.of(path));
-        } catch (java.io.IOException | NullPointerException e ) {
+        } catch (java.io.IOException | NullPointerException e) {
             throw new IllegalStateException("Не удалось загрузить SQL-файл: " + path, e);
         }
     }

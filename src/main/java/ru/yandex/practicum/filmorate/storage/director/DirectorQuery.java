@@ -21,10 +21,10 @@ public enum DirectorQuery {
         return sql;
     }
 
-    private String loadSql(String path){
-        try{
+    private String loadSql(String path) {
+        try {
             return Files.readString(Path.of(path));
-        } catch (java.io.IOException | NullPointerException e ) {
+        } catch (java.io.IOException | NullPointerException e) {
             throw new IllegalStateException("Не удалось загрузить SQL-файл: " + path, e);
         }
     }
