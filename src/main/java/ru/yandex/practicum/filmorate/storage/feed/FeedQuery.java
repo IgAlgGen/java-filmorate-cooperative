@@ -7,7 +7,6 @@ public enum FeedQuery {
     INSERT("src/main/resources/sql/feed/insert.sql"),
     SELECT_BY_USER_ID("src/main/resources/sql/feed/select_by_user_id.sql");
 
-
     private final String sql;
 
     FeedQuery(String queryPath) {
