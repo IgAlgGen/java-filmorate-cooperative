@@ -71,7 +71,7 @@ public class GenreDbStorage implements GenreStorage {
     public void renewGenres(int filmId, Set<Genre> genres) {
         // стереть старые связи
         MapSqlParameterSource params = new MapSqlParameterSource().addValue("filmId", filmId);
-        namedParameterJdbcTemplate.update(GenreQuery.SELECT_BY_FILM_ID.getSql(), params);
+        namedParameterJdbcTemplate.update(GenreQuery.DELETE_BY_FILM_ID.getSql(), params);
 
         // добавить новые связи
         if (genres == null || genres.isEmpty()) return;
