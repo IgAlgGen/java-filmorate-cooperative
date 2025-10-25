@@ -1,0 +1,1 @@
+DELETE FROM directors WHERE id=:id;

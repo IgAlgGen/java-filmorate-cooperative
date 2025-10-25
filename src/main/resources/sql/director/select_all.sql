@@ -1,0 +1,1 @@
+SELECT id, name FROM directors ORDER BY id;
