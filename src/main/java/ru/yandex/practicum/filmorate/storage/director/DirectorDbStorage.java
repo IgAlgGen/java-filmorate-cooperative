@@ -37,11 +37,11 @@ public class DirectorDbStorage implements DirectorStorage {
     @Override
     @Transactional
     public Director create(Director director) {
-        final String sqlDirectorInsert = "INSERT INTO directors (name) VALUES (" + par(pNAME) + ")";
+        //final String sqlDirectorInsert = "INSERT INTO directors (name) VALUES (" + par(pNAME) + ")";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         SqlParameterSource param = new BeanPropertySqlParameterSource(director);
-        namedParameterJdbcTemplate.update(sqlDirectorInsert, param, keyHolder,
-                new String[]{pID});
+        namedParameterJdbcTemplate.update(DirectorQuery.INSERT.getSql(), param, keyHolder,
+                new String[]{"id"});
         Number key = keyHolder.getKey();
         director.setId(Objects.requireNonNull(key).intValue());
         return director;

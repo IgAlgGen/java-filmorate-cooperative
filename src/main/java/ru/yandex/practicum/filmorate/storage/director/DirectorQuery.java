@@ -1,8 +1,5 @@
 package ru.yandex.practicum.filmorate.storage.director;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 public enum DirectorQuery {
     INSERT("INSERT INTO directors (name) VALUES (:name);"),
     UPDATE("UPDATE directors SET name=:name WHERE id=:id;"),
