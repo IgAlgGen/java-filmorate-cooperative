@@ -78,9 +78,8 @@ public class ReviewService {
     public List<Review> getReviewsForFilmId(int filmId, int count) {
         if (filmId == 0) {
             return reviewStorage.getReviews(count);
-        } else {
-            return reviewStorage.getReviewsForFilmId(filmId, count);
         }
+        return reviewStorage.getReviewsForFilmId(filmId, count);
     }
 
     public void addLikeReview(Long id, int userId) {

@@ -24,32 +24,17 @@ public class FilmDbStorage implements FilmStorage {
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final FilmRowMapper filmRowMapper;
 
-    private final String pID = "id";
-    private final String pNAME = "name";
-    private final String pDESCRIPTION = "description";
-    private final String pRELEASEDATE = "releaseDate";
-    private final String pDURATION = "duration";
-    private final String pMPA = "mpa";
-
-    private static String par(String param) {
-        return ":" + param;
-    }
-
     @Override
     @Transactional
     public Film create(Film film) {
-        final String sqlFilmInsert = """
-                INSERT INTO films (name, description, release_date, duration, mpa)
-                VALUES (%s, %s, %s, %s, %s)
-                """.formatted(par(pNAME), par(pDESCRIPTION), par(pRELEASEDATE), par(pDURATION), par(pMPA));
         MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue(pNAME, film.getName())
-                .addValue(pDESCRIPTION, film.getDescription())
-                .addValue(pRELEASEDATE, film.getReleaseDate())
-                .addValue(pDURATION, film.getDuration())
-                .addValue(pMPA, film.getMpa().getId());
+                .addValue("name", film.getName())
+                .addValue("description", film.getDescription())
+                .addValue("releaseDate", film.getReleaseDate())
+                .addValue("duration", film.getDuration())
+                .addValue("mpa", film.getMpa().getId());
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        namedParameterJdbcTemplate.update(sqlFilmInsert, params, keyHolder, new String[]{pID});
+        namedParameterJdbcTemplate.update(FilmQuery.INSERT.getSql(), params, keyHolder, new String[]{"id"});
         Number key = keyHolder.getKey();
         film.setId(Objects.requireNonNull(key).intValue());
         return film;
@@ -58,19 +43,14 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     @Transactional
     public Film update(Film film) {
-        final String sqlFilmUpdate = """
-                UPDATE films
-                SET name = %s, description = %s, release_date = %s, duration = %s, mpa = %s
-                WHERE id = %s
-                """.formatted(par(pNAME), par(pDESCRIPTION), par(pRELEASEDATE), par(pDURATION), par(pMPA), par(pID));
         MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue(pNAME, film.getName())
-                .addValue(pDESCRIPTION, film.getDescription())
-                .addValue(pRELEASEDATE, film.getReleaseDate())
-                .addValue(pDURATION, film.getDuration())
-                .addValue(pMPA, film.getMpa().getId())
-                .addValue(pID, film.getId());
-        int updated = namedParameterJdbcTemplate.update(sqlFilmUpdate, params);
+                .addValue("name", film.getName())
+                .addValue("description", film.getDescription())
+                .addValue("releaseDate", film.getReleaseDate())
+                .addValue("duration", film.getDuration())
+                .addValue("mpa", film.getMpa().getId())
+                .addValue("id", film.getId());
+        int updated = namedParameterJdbcTemplate.update(FilmQuery.UPDATE.getSql(), params);
         if (updated == 0) {
             throw new NoSuchElementException("Film not found: id=" + film.getId());
         }
@@ -79,14 +59,9 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Optional<Film> getById(int id) {
-        final String sqlFilmSelectById = """
-                SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa
-                FROM films f
-                WHERE f.id = %s
-                """.formatted(par(pID));
         try {
-            return Optional.ofNullable(namedParameterJdbcTemplate.queryForObject(sqlFilmSelectById,
-                    new MapSqlParameterSource(pID, id), filmRowMapper));
+            return Optional.ofNullable(namedParameterJdbcTemplate.queryForObject(FilmQuery.SELECT_BY_ID.getSql(),
+                    new MapSqlParameterSource("id", id), filmRowMapper));
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
@@ -94,44 +69,22 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getAll() {
-        final String sqlFilmSelectAll = """
-                SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa
-                FROM films f
-                ORDER BY f.id
-                """;
-        return namedParameterJdbcTemplate.query(sqlFilmSelectAll, filmRowMapper);
+        return namedParameterJdbcTemplate.query(FilmQuery.SELECT_ALL.getSql(), filmRowMapper);
     }
 
     @Override
     @Transactional
     public boolean deleteById(int id) {
-        final String sqlFilmDelete = """
-                DELETE FROM films WHERE id = %s
-                """.formatted(par(pID));
-        return namedParameterJdbcTemplate.update(sqlFilmDelete, new MapSqlParameterSource(pID, id)) > 0;
+        return namedParameterJdbcTemplate.update(FilmQuery.DELETE_BY_ID.getSql(), new MapSqlParameterSource("id", id)) > 0;
     }
 
     @Override
     public List<Film> getCommonFilmsSortedByPopularity(int userId, int friendId) {
-        final String sqlGetCommonFilms = """
-                SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa
-                FROM films AS f
-                JOIN film_likes AS fl ON f.id = fl.film_id
-                WHERE f.id IN (
-                    SELECT film_id FROM film_likes WHERE user_id = :userId
-                )
-                AND f.id IN (
-                    SELECT film_id FROM film_likes WHERE user_id = :friendId
-                )
-                GROUP BY f.id
-                ORDER BY COUNT(fl.user_id) DESC
-                """;
-
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("userId", userId)
                 .addValue("friendId", friendId);
 
-        return namedParameterJdbcTemplate.query(sqlGetCommonFilms, params, filmRowMapper);
+        return namedParameterJdbcTemplate.query(FilmQuery.SELECT_COMMON_FILMS.getSql(), params, filmRowMapper);
     }
 
     /**
@@ -148,22 +101,8 @@ public class FilmDbStorage implements FilmStorage {
             default      -> "f.id";
         };
 
-        final String sql = """
-        SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa
-             , COALESCE(lc.cnt, 0) AS likes_count
-        FROM films f
-        JOIN film_directors fd ON fd.film_id = f.id
-        LEFT JOIN (
-           SELECT film_id, COUNT(*) AS cnt
-           FROM film_likes
-           GROUP BY film_id
-        ) lc ON lc.film_id = f.id
-        WHERE fd.director_id = :directorId
-        ORDER BY %s
-        """.formatted(orderBy);
-
-        List<Film> films = namedParameterJdbcTemplate.query(
-                sql, new MapSqlParameterSource("directorId", directorId), filmRowMapper);
+        List<Film> films = namedParameterJdbcTemplate.query(FilmQuery.SELECT_BY_DIRECTOR_SORTED.getSql().formatted(orderBy),
+                new MapSqlParameterSource("directorId", directorId), filmRowMapper);
         return films;
     }
 
@@ -201,6 +140,7 @@ public class FilmDbStorage implements FilmStorage {
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("pattern", queryLower);
 
-        return namedParameterJdbcTemplate.query(sql, params, filmRowMapper);
+        return namedParameterJdbcTemplate.query(FilmQuery.SELECT_BY_TITLE_AND_DIRECTOR.getSql().formatted(where.toString()),
+                params, filmRowMapper);
     }
 }
